@@ -354,5 +354,4 @@ function draw_time_stats(){
         ctx.font="16px Ubuntu";
         ctx.fillStyle = colors.WHITE;
         ctx.fillText("Time: " + (time/fps).toFixed(0) + ' s', 650, 50);
-
 }

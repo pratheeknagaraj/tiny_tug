@@ -215,7 +215,7 @@ function draw_teathers(){
     
 }
 
-// --------------- DRAW TEATHERS ----------------- //
+// --------------- DRAW OPTIONS ----------------- //
 
 function draw_options(){
     draw_sfx_button();

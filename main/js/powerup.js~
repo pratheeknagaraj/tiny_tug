@@ -1,5 +1,5 @@
-var available = ['Attack','Steal','Magnet','CoinBurst','SpeedBoost','Elastic','Missile'];
-//var available = ['Magnet','Attack','CoinBurst'];
+var powerups_available = ['Attack','Steal','Magnet','CoinBurst','SpeedBoost','Elastic','Missile'];
+//var powerups_available = ['Magnet','Attack','CoinBurst'];
 
 var use_icons = true;
 // --------------- Powerups ------------- //
@@ -451,8 +451,7 @@ function MissilePowerupToken(){
 // --------------- Create Powerup ------------- //
 
 function create_powerup(){
-    console.log(available);
-    var probe = available[Math.floor((Math.random()*available.length))];    
+    var probe = powerups_available[Math.floor((Math.random()*powerups_available.length))];    
     var new_token = undefined;
 
 

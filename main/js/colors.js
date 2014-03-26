@@ -13,3 +13,21 @@ colors.GRASS = 'rgba(0,125,0,1.0)';
 colors.GRASS2 = 'rgba(0,175,0,1.0)';
 colors.GEL = 'rgba(100,0,100,1.0)';
 colors.FIRE = 'rgba(255,150,0,1.0)';
+
+function get_team_color(team_id){
+    if ( team_id == 0 ){
+        return colors.RED;
+    }    
+    else if ( team_id == 1 ){
+        return colors.GREEN;
+    }    
+    else if ( team_id == 2 ){
+        return colors.BLUE;
+    }
+    else if ( team_id == 3 ){
+        return colors.ORANGE;
+    }
+    else {
+        return undefined;
+    }
+}

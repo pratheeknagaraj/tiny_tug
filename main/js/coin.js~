@@ -24,7 +24,7 @@ function Coin(){
     } 
 
     this.move = function(player,multiplier){
-        var force = 5 * multiplier * player.get_mass() * this.mass / Math.pow(get_sprite_distance(this,player),2.0);
+        var force = 3 * multiplier * player.get_mass() * this.mass / Math.pow(get_sprite_distance(this,player),2.0);
         var angle = get_sprite_angle(player,this);
         this.x += force*Math.cos(angle);
         this.y += force*Math.sin(angle);
