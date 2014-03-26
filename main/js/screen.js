@@ -1,0 +1,35 @@
+function draw_screen(){
+    ctx.globalAlpha=0.05;
+    ctx.fillStyle = colors.WHITE;
+    ctx.fillRect(0,0,800,550);
+    ctx.globalAlpha=1.0;
+
+    ctx.globalAlpha=0.15;
+    ctx.fillStyle = colors.GREY_1;
+    ctx.fillRect(25,25,500,500);
+    ctx.globalAlpha=1.0;
+
+    if ( game_start == false ){
+        ctx.globalAlpha=0.50;
+        ctx.fillStyle = colors.GOLD_YELLOW;
+        ctx.fillRect(600,250,150,50);
+        ctx.globalAlpha=1.0;
+        ctx.lineWidth=2;
+        ctx.beginPath(); 
+        ctx.strokeStyle=colors.WHITE;
+        ctx.rect(600,250,150,50); 
+        ctx.stroke();      
+        ctx.closePath(); 
+
+        ctx.globalAlpha=0.75;
+        ctx.font="24px Ubuntu";
+        ctx.fillStyle = colors.WHITE;
+        ctx.fillText("Start", 650, 285);
+    }
+
+    ctx.globalAlpha=0.15;
+    ctx.fillStyle = 'rgba(200, 200, 200, 1.0)';
+    ctx.fillRect(25,25,500,500);
+    ctx.globalAlpha=1.0;
+}
+
