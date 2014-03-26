@@ -23,7 +23,7 @@ body {
 
 .container > * {
     display:block;
-    margin:50px auto;
+    margin:20px auto;
 }
 
 footer {

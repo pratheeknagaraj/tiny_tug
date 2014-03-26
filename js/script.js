@@ -1,446 +1,59 @@
 // -------------------------------------------------------------
 
 // global variables :
-
+var sfx_on = false;
+var time = 0;
 var game_start = false;
 var keys_pressed = {};
+var players = [];
+var id_to_player = {};
+var teathers = {};
+var move_mappings = {};
+var mapped = 0;
+var coins = [];
+var lost_coins = [];
+var max_coins = 10;
+
+var missiles = [];
+var dead_missiles = [];
+
+var time_warning_count = 0;
+
+var powerups = [];
+var max_powerups = 5;
+var powerup_frequency = 0.97;
+
+var fps = 60;
+var frame_interval = Math.round(1000/fps);
+var game_over = false;
+
+var teams = [];
+var team_stats = {};
+
+var key_up_times = {};
+var key_down_times = {};
+var double_tap = {};
+var double_tap_sensitivity = 15;
+
+var has_ended = false;
+var delta_time = 1;
+var end_time = 30000;
+
+var x_min = 25;
+var y_min = 25;
+var x_range = 600;
+var y_range = 500;
+var boundaries = [x_min,y_min,x_min+x_range,y_min+y_range];
+
+var MAX_INITIAL_SEPARATION = 200;
 
 // colors :
-var gold_yellow_color = 'rgba(255, 200, 0, 1.0)';
 
 var canvas, ctx;
-var gridPoints = [];
-var board;
-var cells = [];
-var cell_map = {};
-var galaxy_selected;
-var selectedCell;
-var selected_galaxy_cell;
-var hoveredCell;
-var keyPressed;
-var playerList = [];
-var playerCount;
-var playerNames = {};
-var playerTypes = {};
-var playerColors = {};
-var galaxy_map = {};
-var currentPlayer;
-var x_grid_max;
-var y_grid_max;
-var game_statistics;
-var selection_map = {};
-var galaxy_abbreviation_toggle = false;
 
 // -------------------------------------------------------------
 
 // objects :
-
-function Board(board_array){
-    this.array = board_array;
-
-    this.printBoard_Players = function(){
-        for (var i = 0; i < this.array.length; i++){
-            console.log(this.array[i]);
-        }  
-    };
-}
-
-function Circle(x, y, radius){
-    this.x = x;
-    this.y = y;
-    this.radius = radius;
-}
-
-function GridPoint(x, y, radius){
-    this.x = x;
-    this.y = y;
-    this.radius = radius;    
-}
-
-function GridCell(x, y, x_grid, y_grid, cell_id, size){
-    this.x = x;
-    this.y = y;
-    this.x_grid = x_grid;
-    this.y_grid = y_grid;
-    this.cell_id = cell_id;
-    this.size = size;
-    this.properties = new CellProperties({},0);
-    this.playerId = 0;
-    this.occupied = 0;
-    this.galaxy = undefined;
-    this.captured = false;
-    this.captured_from = 0;
-}
-
-function CellProperties(influence_map,galaxies_influencing){
-    this.influence = new Influence(influence_map);
-    this.galaxies_influencing = galaxies_influencing;
-}
-
-function Influence(percent_map){
-    this.percents = percent_map;
-}
-
-function GameStatistics(){
-    this.galaxy_count;
-    this.player_galaxies;
-    this.player_cells;
-    this.player_cell_count;
-    this.player_cell_percents;
-    this.player_percents;
-    this.player_aggregated_percents;
-    this.cell_count;
-    this.empty_cells;
-
-    this.reset_statistics = function(){
-        this.galaxy_count = 0;
-        this.player_galaxies = undefined;
-        this.player_cells = undefined;
-        this.player_cell_count = {0: cells.length};
-        this.player_cell_percents = {0: 1.0};
-        this.player_percents = undefined;
-        this.player_aggregated_percents = undefined;
-        this.cell_count = cells.length;
-        this.empty_cells = undefined;
-
-    };
-}
-
-// -------------------------------------------------------------
-
-// helper functions
-
-function getColor(){
-    return playerColors[currentPlayer];
-}
-
-function getColor(playerId){
-    return playerColors[playerId];
-}
-
-function getIfAllowedMove(cell){
-    if (cell.occupied != 0){
-        return false;
-    }
-    if (cell.playerId == 0){
-        return true;
-    }
-    if (cell.playerId != currentPlayer){
-        return false;
-    }
-    return true;
-}
-
-function distance(cell1, cell2, metric){
-    if ( metric == 'manhattan' ){
-        x_grid1 = cell1.x_grid;
-        y_grid1 = cell1.y_grid;
-        x_grid2 = cell2.x_grid;
-        y_grid2 = cell2.y_grid;
-        return Math.abs(x_grid1 - x_grid2) + Math.abs(y_grid1 - y_grid2);
-    }
-    else if ( metric == 'manhattan_max' ){
-        x_grid1 = cell1.x_grid;
-        y_grid1 = cell1.y_grid;
-        x_grid2 = cell2.x_grid;
-        y_grid2 = cell2.y_grid;
-        return Math.max( Math.abs(x_grid1 - x_grid2), Math.abs(y_grid1 - y_grid2) );
-    }
-    else if ( metric == 'lines' ){
-        x_grid1 = cell1.x_grid;
-        y_grid1 = cell1.y_grid;
-        x_grid2 = cell2.x_grid;
-        y_grid2 = cell2.y_grid;
-        if ( Math.abs(x_grid1 - x_grid2) == 0 ){
-            return Math.abs(y_grid1 - y_grid2);
-        }
-
-        if ( Math.abs(y_grid1 - y_grid2) == 0 ){
-            return Math.abs(x_grid1 - x_grid2);
-        }
-
-        return Number.MAX_VALUE;
-    }
-}
-
-function get_neighbors(cell, type){
-    board_array = board.array;
-    if ( type == 1 ){
-        var x_grid = cell.x_grid;
-        var y_grid = cell.y_grid;
-        var neighbors = {};
-        if (x_grid > 0){
-            neighbors['left'] = board_array[x_grid-1][y_grid];
-        }
-        if (x_grid < x_grid_max){
-            neighbors['right'] = board_array[x_grid+1][y_grid];
-        }
-        if (y_grid > 0){
-            neighbors['up'] = board_array[x_grid][y_grid-1];
-        }
-        if (y_grid < y_grid_max){
-            neighbors['down'] = board_array[x_grid][y_grid+1];
-        }
-        return neighbors;
-    }
-    else if ( type == 2 ){
-        var x_grid = cell.x_grid;
-        var y_grid = cell.y_grid;
-        array = [];
-        if (x_grid > 0){
-            array.push(board_array[x_grid-1][y_grid]);
-        }
-        if (x_grid < x_grid_max){
-            array.push(board_array[x_grid+1][y_grid]);
-        }
-        if (y_grid > 0){
-            array.push(board_array[x_grid][y_grid-1]);
-        }
-        if (y_grid < y_grid_max){
-            array.push(board_array[x_grid][y_grid+1]);
-        }
-        return array;
-    }
-    console.log("Error - Incorrect Neighbor Call with: " + type);
-    return;
-}
-
-// -------------------------------------------------------------
-
-// game status functions
-
-function getBoardWithPlayers(){
-    players_board = [];
-    for (var i = 0; i < board.length; i++ ){
-        players_board_line = [];
-        for (var j = 0; j < board[i].length; j++ ){
-            players_board_line.push( board[i][j].playerId );
-        }
-        players_board.push(players_board_line);
-    }
-    return players_board;
-}
-
-// -------------------------------------------------------------
-
-// game control functions
-
-function makeMove(cell){
-    cell.playerId = currentPlayer;
-    cell.occupied = currentPlayer;
-    var selection = selection_map[currentPlayer];
-    var type = getGalaxyType( selection );
-    var galaxy = addGalaxy(type);
-    cell.galaxy = galaxy;
-    galaxy_map[cell.cell_id] = galaxy;
-    changePlayer();
-    compute(false);
-}
-
-function getGalaxyType(selection){
-    var type = undefined;
-    if ( selection == 'Block' ){
-        type = 'block_galaxy';
-    }
-    if ( selection == 'Spiral' ){
-        type = 'spiral_galaxy';
-    }
-    if ( selection == 'Ring' ){
-        type = 'ring_galaxy';
-    }
-    if ( selection == 'Line' ){
-        type = 'line_galaxy';
-    }
-    return type;
-}
-
-function addGalaxy(type){
-    var galaxy;
-    return get_galaxy( type );
-}
-
-function compute_on_cell(cell){
-    var temp_influence = {};
-    var total_influence = 0.0;
-    var galaxies_influencing = 0;
-    for ( var galaxy_cell_id in galaxy_map ){
-
-        if (!galaxy_map.hasOwnProperty(galaxy_cell_id)) { // Check for correct Property
-            continue;
-        }
-        var galaxy_cell = cell_map[galaxy_cell_id];
-        var galaxy = galaxy_map[galaxy_cell_id];
-
-        var galaxy_influence = galaxy.getInfluence();
-        var cell_distance = distance(cell, galaxy_cell, galaxy.metric);
-
-        if (cell_distance in galaxy_influence){
-            galaxies_influencing += 1;
-            var cell_influence = galaxy_influence[cell_distance];
-
-            var player = galaxy.player;
-            if ( player in temp_influence == false ){
-                temp_influence[player] = 0.0;
-            }
-            temp_influence[player] += cell_influence;
-            total_influence += cell_influence;
-        }
-    }
-    return [temp_influence,total_influence,galaxies_influencing];
-}
-
-function compute(captured){
-
-    var mutual_threshold = 1e-5;
-
-    var new_game_statistics = new GameStatistics();
-    new_game_statistics.cell_count = cells.length;
-    new_game_statistics.galaxy_count = galaxy_map.length;
-
-    var new_player_galaxies = {};
-    for ( var galaxy_cell_id in galaxy_map ){
-        var galaxy = galaxy_map[galaxy_cell_id];
-        var player = galaxy.player;
-        if ( player in new_player_galaxies == false ){
-            new_player_galaxies[player] = [];
-        }
-        new_player_galaxies[player].push( galaxy );
-    }
-    new_game_statistics.player_galaxies = new_player_galaxies;
-
-    var captured_flag = false;
-    var new_empty_cells = 0;
-    for ( var i = 0; i < cells.length; i++ ){
-        var cell = cells[i];
-    
-        var packaged_values = compute_on_cell(cell);
-        var temp_influence = packaged_values[0];
-        var total_influence = packaged_values[1];
-        var galaxies_influencing = packaged_values[2];
-
-        if ( galaxies_influencing != 0 ){
-
-            var old_galaxy_count = cell.properties.galaxies_influencing;
-            if ( old_galaxy_count != galaxies_influencing || captured == true){
-                
-                var max_players = [];
-                var max_influence = 0.0;
-                percent_map = {};
-                for (var player in temp_influence){
-                    percent_map[player] = temp_influence[player]/total_influence;
-                    if ( Math.abs(temp_influence[player] - max_influence) < mutual_threshold ){
-                        max_players.push( player );
-                        continue;
-                    }                
-                    if ( temp_influence[player] > max_influence ){
-                        max_influence = temp_influence[player];
-                        max_players = [];
-                        max_players.push( player );
-                    }
-                }
-
-                var winning_player;
-                if ( max_players.length > 1 ){
-                    var id = Math.floor((Math.random()*max_players.length));
-                    winning_player = max_players[id];
-                }
-                else {
-                    winning_player = max_players[0];
-                }
-                cell.playerId = winning_player;
-                if ( cell.occupied != 0 && cell.galaxy.player != winning_player ){
-                    cell.captured_from = cell.galaxy.player;
-                    cell.galaxy.player = winning_player;
-                    cell.captured = true;
-                    captured_flag = true;
-                    break;
-                }
-                else {
-                    cell.properties = new CellProperties(percent_map,galaxies_influencing);
-                }
-            }
-        }
-        else {
-            new_empty_cells += 1 ;
-        }
-    }
-    if ( captured_flag ){
-        compute(true);
-        return;
-    }
-    new_game_statistics.empty_cells = new_empty_cells;
-
-    var new_player_cells = {};
-    var new_player_cell_count = {};
-    var new_player_percents = {};
-    var new_player_aggregated_percents = {};
-
-    for ( var i = 0; i < cells.length; i++ ){
-        var cell = cells[i];
-        var cell_owner = cell.playerId;
-        
-        if ( cell_owner in new_player_cells == false ){
-            new_player_cells[cell_owner] = [];
-            new_player_cell_count[cell_owner] = 0;
-        }
-        new_player_cells[cell_owner] = cell;
-        new_player_cell_count[cell_owner] += 1;
-
-        var influence = cell.properties.influence;
-        for ( var player in influence ){
-            if ( player in new_player_percents == false ){
-                new_player_percents[player] = [];
-                new_player_aggregated_percents[player] = 0.0;
-            }
-            new_player_percents[player].push( influence[player] ); 
-            new_player_aggregated_percents[player] += influence[player];
-        }
-    }
-
-    var new_player_cell_percents = {};
-    for ( var player in new_player_cell_count ){
-        new_player_cell_percents[player] = new_player_cell_count[player]/(1.0*cells.length);
-    }
-
-    new_game_statistics.player_cells = new_player_cells;
-    new_game_statistics.player_cell_count = new_player_cell_count;
-    new_game_statistics.player_cell_percents = new_player_cell_percents;
-    new_game_statistics.player_percents = new_player_percents;
-    new_game_statistics.player_aggregated_percents = new_player_aggregated_percents;
-
-    game_statistics = new_game_statistics;
-}
-
-
-
-// -------------------------------------------------------------
-
-// control functions
-
-function checkKey(){
-    if ( keyPressed == 'z' ){
-        changePlayer();
-    }
-    if ( keyPressed == 'a' ){
-        console.log( board.printBoard_Players() );
-    }
-    if ( keyPressed == 'g' ){
-        galaxy_abbreviation_toggle = !galaxy_abbreviation_toggle;
-    }
-    if ( keyPressed == '1' ){
-        selection_map[currentPlayer] = 'Block';
-    }
-    if ( keyPressed == '2' ){
-        selection_map[currentPlayer] = 'Spiral';
-    }
-    if ( keyPressed == '3' ){
-        selection_map[currentPlayer] = 'Ring';
-    }
-    if ( keyPressed == '4' ){
-        selection_map[currentPlayer] = 'Line';
-    }
-    keyPressed = undefined;
-}
 
 function getMouseCoordinates(e){
     var x;
@@ -460,516 +73,10 @@ function getMouseCoordinates(e){
 
 // -------------------------------------------------------------
 
-// initialization function
-
-function setGrid(width, height, spacing, radius) {
-    points = []
-    x_count = Math.floor(width/spacing);
-    y_count = Math.floor(height/spacing);
-    for (var i=0; i < x_count+1; i++ ){
-        for (var j=0; j < y_count+1; j++ ){
-            point = new GridPoint( i*spacing, j*spacing, radius );
-            points.push( point );
-        }
-    }
-    return points;
-}
-
-function setCells(width, height, spacing){
-    cells = [];
-    new_board = []
-    x_count = Math.floor(width/spacing);
-    y_count = Math.floor(height/spacing);
-    x_grid_max = x_count-1;
-    y_grid_max = y_count-1;
-    var totalCount = 0;
-    for (var i=0; i < x_count; i++ ){
-        new_board_line = [];
-        for (var j=0; j < y_count; j++ ){
-            var cell_id = totalCount;
-            cell = new GridCell( i*spacing, j*spacing, i, j, cell_id, spacing );
-            cell_map[cell_id] = cell;
-            cells.push( cell );
-            new_board_line.push(cell);
-            totalCount += 1;
-        }
-        new_board.push(new_board_line);
-    }
-    board = new Board(new_board);
-    return cells;
-}
-    
-function setSelectionMap(){
-    for (var i = 0; i < playerList.length; i++ ){
-        player = playerList[i];
-        selection_map[player] = 'Block';
-    }
-}
-
-function random_start(){
-    var cell_list = [];
-    var players = playerList.slice(0);
-    for ( var i = 0; i < playerList.length; i++ ){
-        var player_pos = Math.floor( Math.random()*players.length );        
-        currentPlayer = players[player_pos];
-        players.splice(player_pos, 1);
-        var valid = false;
-        var cell_id = undefined;
-        var cell = undefined;
-        while ( valid == false ){
-            cell_id = Math.floor( Math.random()*cells.length );
-            cell = cell_map[cell_id];
-            if ( cell.occupied == 0 ){
-                valid = true;
-                for ( var j = 0; j < cell_list.length; j++ ){
-                    if ( distance( cell_list[j], cell, 'manhattan' ) < x_grid_max/playerList.length + y_grid_max/playerList.length ){
-                        valid = false;
-                        break;
-                    }
-                }
-            } 
-        }
-        makeMove(cell);
-        cell_list.push(cell);
-    }
-    currentPlayer = playerList[0];
-}
-
-// -------------------------------------------------------------
-
 // draw functions :
 
 function clear() { // clear canvas function
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-}
-
-function clear_variables(){
-    selectedCell = undefined;
-    hoveredCell = undefined;
-}
-
-function drawSceneBackground() {
-    ctx.globalAlpha=0.10;
-    ctx.fillStyle="#FFFFFF";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.globalAlpha=1.0;
-}
-
-function drawCircle(ctx, x, y, radius) { // draw circle function
-    ctx.fillStyle = 'rgba(255, 35, 55, 1.0)';
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI*2, true);
-    ctx.closePath();
-    ctx.fill();
-}
-
-function drawGridPoint(ctx, gridPoint){
-    x = gridPoint.x;
-    y = gridPoint.y;
-    radius = gridPoint.radius;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.fillRect(x-radius,y-radius,radius*2,radius*2);
-    /*ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI*2, true);
-    ctx.closePath();
-    ctx.fill();*/
-}
-
-function drawCell(ctx, cell, type){
-    x = cell.x;
-    y = cell.y;
-    size = cell.size;
-    padding = 3;
-
-    selected_galaxy_cell = undefined;
-
-    if ( cell.playerId != 0 ){
-        ctx.fillStyle = getColor(cell.playerId);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 1.0;
-        if ( cell.occupied != 0 ){
-            ctx.globalAlpha = 0.5;
-            ctx.fillRect(x+padding,y+padding,size-2*padding,size-2*padding);
-            ctx.globalAlpha = 1.0;
-            if ( cell.captured == true ){
-                ctx.globalAlpha = 0.5;
-                ctx.fillRect(x+padding*3,y+padding*3,size-2*3*padding,size-2*3*padding);
- 
-                ctx.beginPath();
-                ctx.lineWidth="1";
-                ctx.strokeStyle=getColor(cell.captured_from);
-                ctx.rect(x+padding*3,y+padding*3,size-2*3*padding,size-2*3*padding);
-                ctx.stroke();
-                ctx.globalAlpha = 1.0;
-
-            }
-            if ( galaxy_abbreviation_toggle == true ) {
-                ctx.font= "32px Ubuntu";
-                ctx.textAlign = 'center';
-                ctx.strokeStyle = getColor(cell.playerId);
-                ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-                ctx.fillText( cell.galaxy.abbreviation, x+cell.size/2.0, y+cell.size/1.35 ); 
-                ctx.strokeText(cell.galaxy.abbreviation, x+cell.size/2.0, y+cell.size/1.35 );
-                ctx.textAlign = 'left';
-            }
-            if ( type == 2 ){
-                //console.log(cell);
-                selected_galaxy_cell = cell;
-            }
-        }
-        else {
-            if ( type == 0 || type == 1 ){
-                ctx.globalAlpha = 0.15;
-                if ( type == 1 && cell.playerId == currentPlayer ){
-                    ctx.globalAlpha = 0.35;
-                }
-                ctx.fillRect(x+padding,y+padding,size-2*padding,size-2*padding);
-                ctx.globalAlpha = 1.0;
-            }
-            else if ( type == 2 ){
-                if ( cell.playerId == currentPlayer ){
-                    ctx.globalAlpha = 0.5;
-                    ctx.fillRect(x,y,size,size);
-                    ctx.globalAlpha = 1.0;  
-                    if (getIfAllowedMove(cell)){
-                        makeMove(cell);
-                    }
-                }
-                else {
-                    ctx.globalAlpha = 0.15;
-                    ctx.fillRect(x+padding,y+padding,size-2*padding,size-2*padding);
-                    ctx.globalAlpha = 1.0;
-                }
-            }
-        }   
-        return;    
-    }
-
-    if ( type == 0 ){ // None
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
-        ctx.fillRect(x+padding,y+padding,size-2*padding,size-2*padding);      
-    }
-    else if ( type == 1 ){ // Hovered
-        padding = 2;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-        ctx.fillRect(x+padding,y+padding,size-2*padding,size-2*padding);   
-    }
-    else if ( type == 2 ){ // Selected
-        //console.log(type, ctx.fillStyle, currentPlayer);
-        ctx.fillStyle = getColor();
-        ctx.globalAlpha = 0.1;
-        ctx.fillRect(x,y,size,size); 
-        ctx.globalAlpha = 1.0;
-        //if (getIfAllowedMove(cell)){
-        //    makeMove(cell);
-        //}      
-    }
-}
-
-function drawPlayer(){
-    ctx.globalAlpha=0.15;
-    ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-    ctx.fillRect(canvas.width-180,10,160,75);
-    ctx.globalAlpha=0.75;
-    ctx.globalAlpha=1.0;
-    ctx.font="24px Ubuntu";
-    var playerId = currentPlayer.toString();
-    var playerName = playerNames[currentPlayer];
-    var playerType = playerTypes[currentPlayer];
-    ctx.fillStyle = playerColors[currentPlayer];
-    ctx.fillText(playerId + ": " + playerName, canvas.width-170, 40);
-    ctx.font="20px Ubuntu";
-    ctx.fillText("Type: " + playerType, canvas.width-170, 70); 
-}
-
-function drawMenuBackground(){
-    var height = canvas.height;
-    var width = canvas.width;
-    ctx.globalAlpha=0.5;
-    ctx.fillStyle = 'rgba(100, 75, 0, 1.0)';
-    ctx.fillRect(width-205,0,200,height);
-    ctx.globalAlpha=1.0;
-    ctx.fillStyle = 'rgba(150, 100, 0, 1.0)';
-    ctx.fillRect(width-202,0,5,height);
-    ctx.globalAlpha=1.0;
-}
-
-function drawPercentBar(){
-    var percents = game_statistics.player_cell_percents;
-    var height = canvas.height;
-    var width = canvas.width;
-    var thickness = 5;
-
-    var currentY = 0;
-    ctx.globalAlpha=1.0;
-    ctx.textAlign = 'right';
-    for ( var player in percents ){
-        var percent = percents[player]
-        var percent_readable = Math.round(percent*100);
-        var added_height = Math.round(percent*height);
-        ctx.globalAlpha=0.15;
-        ctx.fillStyle = getColor(player);
-        ctx.fillRect(width-thickness-12,currentY,12,15); 
-        ctx.globalAlpha=0.5;
-        ctx.fillRect(width-thickness,currentY,thickness,added_height);
-        ctx.globalAlpha=1.0;
-        ctx.font="10px Ubuntu Light";
-        ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-        ctx.fillText(percent_readable, width-thickness, currentY+10); 
-        currentY += added_height; 
-    }
-    ctx.textAlign = 'left';
-    ctx.globalAlpha=1.0;
-}
-
-function draw_galaxy_details_box(){
-
-    if ( selected_galaxy_cell == undefined ){
-        return;
-    }
-
-    ctx.globalAlpha=0.05;
-    ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-    ctx.fillRect(canvas.width-180,100,160,90);
-    ctx.globalAlpha=1.0;
-
-    ctx.globalAlpha=0.75;
-    ctx.font="16px Ubuntu";
-    ctx.fillText("Galaxy Selected", canvas.width-175, 120);
-    ctx.fillStyle = 'rgba(255, 200, 0, 1.0)';
-    ctx.fillRect(canvas.width-180, 128,160,1.5);
-}
-
-function drawHoverBox(){
-    ctx.globalAlpha=0.05;
-    ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-    /*ctx.fillRect(canvas.width-180,400,160,150);*/
-    ctx.globalAlpha=1.0;
-    var endHeight = 400;
-    if ( hoveredCell != undefined || selectedCell != undefined ){
-        var cell = cells[hoveredCell];
-        if ( hoveredCell == undefined ){
-            cell = cells[selectedCell];
-        }
-        var properties = cell.properties;
-        var influence = properties.influence;
-        var galaxy_count = properties.galaxies_influencing;
-        ctx.globalAlpha=0.75;
-        ctx.font="16px Ubuntu";
-        ctx.fillText("Proximal Galaxies: " + galaxy_count, canvas.width-175, 423);
-        if ( galaxy_count != 0 ){
-            ctx.fillStyle = 'rgba(255, 200, 0, 1.0)';
-            ctx.fillRect(canvas.width-180, 428,160,1.5);
-        }
-        endHeight = 435;
-        var playerCount = 0;
-        for ( var player in influence.percents ){
-            ctx.font="16px Ubuntu";
-            ctx.globalAlpha = 0.05;
-            if (cell.playerId == player){
-                ctx.font="bold 16px Ubuntu";
-                ctx.globalAlpha = 0.2;
-            }
-            ctx.fillStyle = getColor(player);
-            ctx.fillRect(canvas.width-180, 455+(playerCount-1)*25,160,25);
-            endHeight = 455+playerCount*25
-            ctx.globalAlpha = 0.75;
-            ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-            var percent =  Math.round(influence.percents[player]*100);
-            var player_name = playerNames[player];
-            ctx.textAlign = 'left';
-            ctx.fillText(player_name + ": ", canvas.width-175, 450+playerCount*25);
-            ctx.textAlign = 'right';
-            ctx.fillText(percent + "%", canvas.width-25, 450+playerCount*25);
-            ctx.textAlign = 'left';
-            playerCount += 1;
-        }           
-    }
-    ctx.globalAlpha=0.05;
-    ctx.fillRect(canvas.width-180,400,160,endHeight-400);
-    ctx.globalAlpha = 1.0; 
-}
-
-function drawGalaxyOptions(){
-    ctx.globalAlpha=0.05;
-    ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-    ctx.fillRect(canvas.width-180,200,160,130);
-    ctx.globalAlpha=1.0;
-
-    ctx.globalAlpha=0.75;
-    ctx.font="16px Ubuntu";
-    ctx.fillText("Galaxies Available", canvas.width-175, 220);
-    ctx.fillStyle = 'rgba(255, 200, 0, 1.0)';
-    ctx.fillRect(canvas.width-180, 230,160,1.5);
-
-    var galaxy_names = ['Block', 'Spiral', 'Ring', 'Line'];
-
-    var currentY = 230;
-    var box_height = 25;
-    var selected = selection_map[currentPlayer];
-    for ( var i = 0; i < galaxy_names.length; i++ ){
-
-        var name = galaxy_names[i];
-
-        ctx.globalAlpha=0.05;
-        if (selected == name ){
-            ctx.globalAlpha=0.15;
-            ctx.font="Bold 16px Ubuntu";
-        }
-        else {
-            ctx.globalAlpha=0.05;
-            ctx.font="16px Ubuntu";
-        }
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-        ctx.fillRect(canvas.width-180,currentY,160,box_height);
-        ctx.globalAlpha=0.75;
-        ctx.fillText(name, canvas.width-175, currentY+box_height-5);
-        currentY += box_height;
-    }
-
-}
-
-function draw_screen(){
-    ctx.globalAlpha=0.05;
-    ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-    ctx.fillRect(0,0,800,550);
-    ctx.globalAlpha=1.0;
-
-    ctx.globalAlpha=0.15;
-    ctx.fillStyle = 'rgba(200, 200, 200, 1.0)';
-    ctx.fillRect(25,25,500,500);
-    ctx.globalAlpha=1.0;
-
-    if ( game_start == false ){
-        ctx.globalAlpha=0.50;
-        ctx.fillStyle = gold_yellow_color;
-        ctx.fillRect(600,250,150,50);
-        ctx.globalAlpha=1.0;
-        ctx.lineWidth=2;
-        ctx.beginPath(); 
-        ctx.strokeStyle='rgba(255, 255, 255, 0.5)';
-        ctx.rect(600,250,150,50); 
-        ctx.stroke();      
-        ctx.closePath(); 
-
-        ctx.globalAlpha=0.75;
-        ctx.font="24px Ubuntu";
-        ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-        ctx.fillText("Start", 650, 285);
-    }
-
-    ctx.globalAlpha=0.15;
-    ctx.fillStyle = 'rgba(200, 200, 200, 1.0)';
-    ctx.fillRect(25,25,500,500);
-    ctx.globalAlpha=1.0;
-
-
-    
-
-    var galaxy_names = ['Block', 'Spiral', 'Ring', 'Line'];
-
-    var currentY = 230;
-    var box_height = 25;
-    var selected = selection_map[currentPlayer];
-    for ( var i = 0; i < galaxy_names.length; i++ ){
-
-        var name = galaxy_names[i];
-
-        ctx.globalAlpha=0.05;
-        if (selected == name ){
-            ctx.globalAlpha=0.15;
-            ctx.font="Bold 16px Ubuntu";
-        }
-        else {
-            ctx.globalAlpha=0.05;
-            ctx.font="16px Ubuntu";
-        }
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-        ctx.fillRect(canvas.width-180,currentY,160,box_height);
-        ctx.globalAlpha=0.75;
-        ctx.fillText(name, canvas.width-175, currentY+box_height-5);
-        currentY += box_height;
-    }
-
-}
-
-// drawing organizers
-
-function drawGrid() {
-    for (var i=0; i<gridPoints.length; i++) { // display all our gridpoints
-        drawGridPoint(ctx, gridPoints[i]);
-    }
-}
-
-function drawCells(){
-    for (var i=0; i<cells.length; i++) { // display all our cells
-        type = 0;
-        if ( i == hoveredCell ){
-            type = 1;
-        }
-        if ( i == selectedCell ){
-            type = 2;
-        }
-        drawCell(ctx, cells[i], type);
-    }
-    //console.log(hoveredCell,selectedCell);
-}
-
-function drawBorders(){
-    for ( var i = 0; i < cells.length; i++ ){
-        var cell = cells[i];
-        if ( cell.playerId != 0 ){
-            var neighbors = get_neighbors(cell,1);
-            for ( var direction in neighbors ){
-                var neighbor_cell = neighbors[direction];
-                if ( neighbor_cell.playerId != cell.playerId ){
-                        
-                    ctx.globalAlpha = 1.0;
-                    ctx.strokeStyle = getColor(cell.playerId);
-                    ctx.lineWidth = 1.5;
-
-                    var padding = 5;
-                    if ( direction == 'up' ){
-                        ctx.beginPath();
-                        ctx.moveTo(cell.x          +padding, cell.y        +padding);
-                        ctx.lineTo(cell.x+cell.size-padding, cell.y        +padding);                   
-                        ctx.stroke();
-                    }
-                    else if ( direction == 'down' ){
-                        ctx.beginPath();
-                        ctx.moveTo(cell.x          +padding, cell.y+cell.size-padding);
-                        ctx.lineTo(cell.x+cell.size-padding, cell.y+cell.size-padding);                      
-                        ctx.stroke();
-                    }
-                    else if ( direction == 'left' ){
-                        ctx.beginPath();
-                        ctx.moveTo(cell.x         +padding, cell.y+         +padding);
-                        ctx.lineTo(cell.x         +padding, cell.y+cell.size-padding);                      
-                        ctx.stroke();
-                    }
-                    else if ( direction == 'right' ){
-                        ctx.beginPath();
-                        ctx.moveTo(cell.x+cell.size-padding, cell.y+         +padding);
-                        ctx.lineTo(cell.x+cell.size-padding, cell.y+cell.size-padding);                      
-                        ctx.stroke();
-                    }
-                    ctx.globalAlpha = 1.0;
-                }
-            }
-        }
-    }
-}
-
-function drawSidePane(){
-    drawMenuBackground();
-    drawPlayer();
-    drawHoverBox();
-    drawPercentBar();
-    drawGalaxyOptions();
-    draw_galaxy_details_box();
-
 }
 
 // drawing handler
@@ -988,7 +95,7 @@ function drawScene() { // main drawScene function
 
 function check_start(){
     if ( keyPressed == 'p' ){
-        alert("yes");
+
     }
 }
 
@@ -1000,79 +107,461 @@ function clear_variables(){
 
     ctx.globalAlpha=0.75;
     ctx.font="16px Ubuntu";
-    ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-    ctx.fillText("Keys Pressed: " + keys.toString(), 100, 600);
+    ctx.fillStyle = colors.WHITE;
+    ctx.fillText("Keys Pressed: " + keys.toString(), 100, 550);
     
+}
+
+function game_time_update(){
+    time_step();
+    near_end();
+}
+
+function near_end(){
+    var current_seconds = Math.floor(time/fps);
+    var end_threshold = 10000;
+    if ( current_seconds > (end_time-end_threshold)/1000 && current_seconds < end_time/1000 && current_seconds != Math.floor((time-1)/fps) ){
+        time_warning_count += 1;
+        play_sfx('pre_end_beep');
+    }
+}
+
+function start(){
+    current_game = games();
+    set_tiles();
+    create_players(current_game['teams']);
+    create_teathers();
+    create_team_stats(current_game['teams']);
+}
+
+function check_if_valid_interior(x,y){
+    var boundaries = get_game_boundaries();
+    if ( x > boundaries[0] && x < boundaries[2] && y > boundaries[1] && y < boundaries[3] ){
+        return true;
+    }
+    return false;
+}
+
+
+
+function burst_coins(x,y,count,player){
+    var radius = player.get_size();
+    var position = player.get_position();
+    for ( var i = 0; i < count; i++ ){
+        var new_coin = create_coin();
+        var angle = Math.random()*Math.PI*2;
+        var x = Math.cos(angle) * ( radius + 10 ) + position[0];
+        var y = Math.sin(angle) * ( radius + 10 ) + position[1];
+        while ( check_if_valid_interior(x,y) == false ){
+            var angle = Math.random()*Math.PI*2;
+            var x = Math.cos(angle) * ( radius + 10 ) + position[0];
+            var y = Math.sin(angle) * ( radius + 10 ) + position[1];
+        }
+        new_coin.set_position(x,y);
+        coins.push( new_coin );
+    }
+}
+
+function create_teathers(){
+    var teather_count = 0;
+    for ( var i in players ){
+        var player = players[i];
+        for ( var j in players ){
+            if ( i == j ){
+                continue;
+            }
+            var other_player = players[j];
+            if ( player.get_team() == other_player.get_team() ){
+                if (!( player.get_player_id() in teathers )){
+                    teathers[player.get_player_id()] = {};
+                }
+                var new_teather;
+                if ( other_player.get_player_id() in teathers &&
+                     player.get_player_id() in teathers[other_player.get_player_id()] ) {
+                    new_teather = teathers[other_player.get_player_id()][player.get_player_id()];
+                }
+                else {
+                    new_teather = create_teather(player.get_team(), teather_count, player.get_player_id(), other_player.get_player_id() );
+                    teather_count += 1;
+                }
+                teathers[player.get_player_id()][other_player.get_player_id()] = new_teather;
+            }
+        }
+    }
+}
+
+function modify_teathers(player,max_size_multiplier){
+    for ( var other_player_id in teathers[player.get_player_id()] ){
+        var teather = teathers[player.get_player_id()][other_player_id];
+        teather.set_max_size_multiplier(max_size_multiplier);
+    }
+}
+
+function get_game_boundaries(){
+    return boundaries;
+}
+
+function create_players(teams_info){
+
+    var team_id = 0;
+    var player_id = 0;
+
+    for ( var team_name in teams_info ){
+        var team_players = [];
+        var team = teams_info[team_name];
+        var team_color = get_team_color(team_id);
+        for ( var i in team['players'] ){
+            var player = team['players'][i];
+            var player_name = player['name'];
+            var player_ai = player['ai'];
+
+            var new_player = create_player(team_id,player_name,player_id,player_ai,this);
+            id_to_player[player_id] = new_player;
+            new_player.set_random_start(x_range,y_range,x_min,y_min);
+            players.push(new_player);
+            team_players.push(new_player);
+
+            if ( player_ai == false ){ // Not AI
+                move_mappings[player_id] = set_mappings();
+            }
+
+            player_id += 1;
+
+        }
+        var new_team = create_team(team_name,team_id,team_players,team_color);
+        teams.push(new_team);
+        team_id += 1;
+    }
+}
+
+function set_mappings(){
+    mapped += 1;
+    return get_default_move_mappings(mapped-1);
+}
+
+function get_team_color(team_id){
+    if ( team_id == 0 ){
+        return colors.RED;
+    }    
+    else if ( team_id == 1 ){
+        return colors.GREEN;
+    }    
+    else if ( team_id == 2 ){
+        return colors.BLUE;
+    }
+    else if ( team_id == 3 ){
+        return colors.ORANGE;
+    }
+    else {
+        return undefined;
+    }
+}
+
+function get_distance(x1,x2,y1,y2){
+    return Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+}
+
+function get_sprite_distance(s1,s2){
+    var s1_pos = s1.get_position();
+    var s2_pos = s2.get_position();
+    return get_distance( s1_pos[0], s2_pos[0], s1_pos[1], s2_pos[1] );
+}
+
+
+
+function create_powerups(){
+    if ( powerups.length < max_powerups ){
+        if ( Math.random() > powerup_frequency ){
+            var new_powerup = create_powerup();
+            new_powerup.set_random_position(x_range,y_range,x_min,y_min);
+            powerups.push( new_powerup );
+        }
+    }
+}
+
+function draw_sprites(){
+    draw_teathers();
+    draw_players();
+    draw_coins();
+    draw_missiles();
+    draw_powerups();
+}
+
+
+function get_default_move_mappings(count){
+    if ( count == 0 ){
+        return {'W': [0,-1], 'A': [-1,0], 'S': [0,1], 'D': [1,0]};
+    }
+    
+    if ( count == 1 ){
+        return {'I': [0,-1], 'J': [-1,0], 'K': [0,1], 'L': [1,0]};
+    }
+
+    if ( count == 2 ){
+        return {'h': [0,-1], 'd': [-1,0], 'e': [0,1], 'f': [1,0]};
+    }
+
+    if ( count == 3 ){
+        return {'&': [0,-1], '%': [-1,0], '(': [0,1], '\'': [1,0]};
+    }
+}
+
+function update_time(){
+    time += delta_time;
+}
+
+function get_time(){
+    return time;
+}
+
+function update_game_status(){
+    if ( 0 == 0 ){
+
+    }
+}
+
+function time_step(){
+    update_time();
+    update_players();
+    update_game_status();
+}
+
+function get_keyboard_moves(id){
+    if ( id in move_mappings == false ){
+        return [0,0]
+    }
+    var key_map = move_mappings[id];
+    var result = [0,0]
+
+    for ( var i in keys_pressed ){
+        if ( i in key_map ){
+            result[0] += key_map[i][0]
+            result[1] += key_map[i][1]
+        }
+    } 
+    return result
+}
+
+function get_double_taps(id){
+    if ( id in move_mappings == false ){
+        return [0,0];
+    }
+    var key_map = move_mappings[id];
+    var result = [0,0];
+    
+    for ( var i in key_map ){
+        if ( i in double_tap ){
+            delete double_tap[i];
+            result[0] += key_map[i][0];
+            result[1] += key_map[i][1];
+        }
+    }
+    return result;
+}
+
+function update_players(){
+    
+    
+    for ( var i in players ){  
+        var player = players[i];
+
+        var friction = 1.00;
+        var fatigue = 1.00;
+        var horiz = 0;
+        var vert = 0;
+        var tension = get_total_tension(player.get_player_id());
+
+        var keyboard_moves = get_keyboard_moves(player.get_player_id());
+        var double_taps = get_double_taps(player.get_player_id());
+
+        var modifiers = get_modifiers_from_position(player.get_position())
+        
+        var others = [];
+        for ( key in modifiers ){
+            if ( key == "Friction" ){
+                friction = modifiers["Friction"];
+            }
+            else if ( key == "Fatigue" ){
+                fatigue = modifiers["Fatigue"];
+            }
+            else {
+                others.push( [key,modifiers[key]] );
+            }
+        }
+
+        player.calculate_move(tension,keyboard_moves[0],keyboard_moves[1],double_taps[0],double_taps[1],friction,fatigue,others,delta_time);
+    }
+
+    for ( var j in players ){
+        var player = players[j];
+        
+        player.update();
+    }
+}
+
+
+
+function get_sprite_angle(s1,s2){
+    var pos1 = s1.get_position();
+    var pos2 = s2.get_position();
+    return Math.atan2( pos1[1] - pos2[1], pos1[0] - pos2[0] );
+}
+
+function get_total_tension(id){
+    var tension = [0,0];
+    var player = id_to_player[id];
+    var player_pos = player.get_position();
+    for ( var j in teathers[id] ){
+        var teather = teathers[id][j];
+        var tension_value = teather.get_tension();
+        var other_player = id_to_player[j];
+        var other_player_pos = other_player.get_position();
+        var angle = Math.atan2( -(player_pos[1] - other_player_pos[1]), -(player_pos[0] - other_player_pos[0]) );
+        tension[0] = tension[0] + tension_value*Math.cos(angle);
+        tension[1] = tension[1] + tension_value*Math.sin(angle);
+    }
+    return tension;
+}
+
+function create_team_stats(teams){
+    for ( var i in players ){
+        var player = players[i];
+        var team = player.get_team();
+
+        if ( team in team_stats == false ){
+            team_stats[team] = {'name': 'name', 'coins': 0, 'players': [], 'powerups': 0};            
+        }
+        team_stats[team]['players'].push(player);
+    }
+}
+
+function get_team_stats(){
+    for ( var key in team_stats ){
+        var team = team_stats[key];
+        team['coins'] = 0;
+        for ( var i in team['players'] ){
+            var player = team['players'][i];
+            team['coins'] += player.get_coins();
+        }
+    }
+}
+
+function draw_info(){
+    draw_team_stats();
+    draw_time_stats();
 }
 
 function main(){
     clear();
 
     draw_screen();
+    draw_board();
+    draw_options();
+    draw_sprites();
     check_start();
 
+
+    get_team_stats();
+    draw_info();
+
+    check_end();
+
+    if ( has_ended == false ){
+        game_time_update();
+        create_coins();
+        remove_lost_coins();
+        remove_dead_missiles();
+        create_powerups();
+        detect_collisions();
+    }
+
     clear_variables();
+}
+
+function get_winner(){
+    teams_ordered = order_teams();
+    output = "";
+
+    for ( var i in teams_ordered ){
+        var team = teams_ordered[i][0];
+        var team_name = team.get_team_name();
+        var total_coins = teams_ordered[i][1];
+        output += team_name + " " + total_coins;
+        output += "\n";    
+    }
+
+    return output;
+}
+
+function check_end(){
+    if ( has_ended == false ) {
+        if ( (time*1000)/fps > end_time ) {
+            has_ended = true;
+            play_sfx('end_beep');
+            console.log("Total Time: " + end_time/1000 + "\n" + get_winner());
+        }
+    }
 }
 
 function add_key_down(key){
     if (key in keys_pressed == false){
         keys_pressed[key] = true;
     }
+    if ( key in double_tap == false && key in key_up_times && 
+        get_time() - key_up_times[key] < double_tap_sensitivity && key in key_down_times && 
+        get_time() - key_down_times[key] < double_tap_sensitivity ){
+        double_tap[key] = true;
+    }
+    key_down_times[key] = get_time();
 }
 
 function remove_key_down(key){
     if (key in keys_pressed){
         delete keys_pressed[key];
-    }    
-}
-// -------------------------------------------------------------
-
-// player data
-
-function createPlayers(){
-    /*
-    playerList = [1,2,3];
-    currentPlayer = 1;
-    playerNames = {1: "Pratheek", 2: "Nagaraj", 3: "Sergei"};
-    playerTypes = {1: "Human", 2: "AI", 3: "AI"};
-    playerColors = {0: 'rgba(255, 255, 255, 1.0)', 1: 'rgba(255, 0, 0, 1.0)', 2: 'rgba(0, 0, 255, 1.0)', 3: 'rgba(0, 255, 0, 1.0)' };
-    playerCount = playerList.length;
-    */
-
-    playerList = [1,2];
-    currentPlayer = 1;
-    playerNames = {1: "Pratheek", 2: "Kaustav"};
-    playerTypes = {1: "Human", 2: "Human"};
-    playerColors = {0: 'rgba(255, 255, 255, 1.0)', 1: 'rgba(255, 0, 0, 1.0)', 2: 'rgba(0, 0, 255, 1.0)' };
-    playerCount = playerList.length;
+    }
+    //if ( key in double_tap == false && key in key_up_times && get_time() - key_up_times[key] < double_tap_sensitivity ){
+    //    double_tap[key] = true;
+    //}
+    //key_up_times[key] = get_time();
+    key_up_times[key] = get_time();
 }
 
-function changePlayer(){
-    newIndex = (playerList.indexOf(currentPlayer) + 1) % playerCount;
-    currentPlayer = playerList[newIndex];
-} 
+function games(){
+    var game_presets = new Game_Presets();
+    return game_presets.get_game_preset(1);
+}
 
 
-// -------------------------------------------------------------
+
+// Buttons //
+
+var sfx_button = {x: 730, y: 500, width: 30, height: 25};
+
+var buttons = [sfx_button];
+function mouse_pressed(x,y){
+    for ( var i = 0; i < buttons.length; i++ ){
+        var button = buttons[i];
+        console.log(x,y);
+        if ( x > button.x && x < button.x+button.width && y > button.y && y < button.y+button.height ){
+            sfx_on = !sfx_on;
+            break;
+        }
+    }
+}
 
 // initialization
 
 $(function(){
+
     canvas = document.getElementById('scene');
     ctx = canvas.getContext('2d');
 
-    var circleRadius = 15;
+    start();
+
     var width = canvas.width;
     var height = canvas.height;
-    var spacing = 40;
-    var gridRadius = 2.5;
 
-    gridPoints = setGrid(width-200,height,spacing,gridRadius);
-    cells = setCells(width-200,height,spacing);
-    createPlayers();
-    setSelectionMap();
-    game_statistics = new GameStatistics();
-    game_statistics.reset_statistics();
+    //canvas.addEventListener("click", mousePressed, false);
 
     keyPressed = undefined;
     $(document).keypress(function(event){
@@ -1080,13 +569,13 @@ $(function(){
     });
 
     $(document.body).keydown(function (evt) {
-        var key_down = pressedKeys[evt.keyCode];
+        var key_down = evt.keyCode;
         key = String.fromCharCode(evt.keyCode);
         add_key_down(key);
     });
 
     $(document.body).keyup(function (evt) {
-        var key_down = pressedKeys[evt.keyCode];
+        var key_down = evt.keyCode;
         key = String.fromCharCode(evt.keyCode);
         remove_key_down(key);
     });
@@ -1097,19 +586,7 @@ $(function(){
         var coords = getMouseCoordinates(e);
         var mouseX = coords[0];
         var mouseY = coords[1];
-
-        for (var i=0; i<cells.length; i++){ // find selected cell
-            var cellX1 = cells[i].x;
-            var cellY1 = cells[i].y;
-            var spacing = cells[i].size;
-            var cellX2 = cellX1 + spacing;
-            var cellY2 = cellY1 + spacing;
-            if (mouseX>cellX1 && mouseX<cellX2 && mouseY>cellY1 && mouseY<cellY2) {
-                selectedCell = i;
-                break;
-            }
-        }
-
+        mouse_pressed(mouseX,mouseY);
     });
 
     $('#scene').mousemove(function(e) { // binding mousemove event for cells
@@ -1117,32 +594,11 @@ $(function(){
         var mouseX = coords[0];
         var mouseY = coords[1];
 
-        hoveredCell = undefined;
-        for (var i=0; i<cells.length; i++){ // find hovered cell
-            var cellX1 = cells[i].x;
-            var cellY1 = cells[i].y;
-            var spacing = cells[i].size;
-            var cellX2 = cellX1 + spacing;
-            var cellY2 = cellY1 + spacing;
-            if (mouseX>cellX1 && mouseX<cellX2 && mouseY>cellY1 && mouseY<cellY2) {
-                hoveredCell = i;
-                break;
-            }
-        }
     });
 
-    $('#scene').mouseup(function(e) { // on mouseup - cleaning selectedCircle
-        selectedCircle = undefined;
-        selectedCell = undefined;
+    $('#scene').mouseup(function(e) { // on mouseup
+        
     });
 
-    random_start();
-
-    setInterval(main, 30); // loop drawScene
+    setInterval(main, frame_interval); // loop drawScene
 });
-
-var log = $('#log')[0],
-    pressedKeys = [];
-
-
-
