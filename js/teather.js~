@@ -27,11 +27,7 @@ function Teather(team,id,player1,player2){
 
     this.get_size_ratio = function(){
         var ratio = this.size/this.max_size;
-        if ( ratio > 0.3 ){
-            console.log(ratio);
-            return ratio;
-        } 
-        return 0.3;
+        return ratio;
     }
 
     this.get_tension = function(){

@@ -46,3 +46,38 @@ function Teather(team,id,player1,player2){
 function create_teather(team,id,p1,p2){
     return new Teather(team,id,p1,p2);
 }
+
+function create_teathers(){
+    var teather_count = 0;
+    for ( var i in players ){
+        var player = players[i];
+        for ( var j in players ){
+            if ( i == j ){
+                continue;
+            }
+            var other_player = players[j];
+            if ( player.get_team() == other_player.get_team() ){
+                if (!( player.get_player_id() in teathers )){
+                    teathers[player.get_player_id()] = {};
+                }
+                var new_teather;
+                if ( other_player.get_player_id() in teathers &&
+                     player.get_player_id() in teathers[other_player.get_player_id()] ) {
+                    new_teather = teathers[other_player.get_player_id()][player.get_player_id()];
+                }
+                else {
+                    new_teather = create_teather(player.get_team(), teather_count, player.get_player_id(), other_player.get_player_id() );
+                    teather_count += 1;
+                }
+                teathers[player.get_player_id()][other_player.get_player_id()] = new_teather;
+            }
+        }
+    }
+}
+
+function modify_teathers(player,max_size_multiplier){
+    for ( var other_player_id in teathers[player.get_player_id()] ){
+        var teather = teathers[player.get_player_id()][other_player_id];
+        teather.set_max_size_multiplier(max_size_multiplier);
+    }
+}

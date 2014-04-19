@@ -31,6 +31,130 @@ function draw_screen(){
 
 }
 
+// --------------- DRAW END SCREEN ----------------- //
+
+var load_count = 0;
+
+function draw_end_screen(){
+    ctx.globalAlpha=0.15;
+    ctx.fillStyle = colors.WHITE;
+    ctx.fillRect(x_min,y_min,x_range,y_range);
+    ctx.globalAlpha=1.0;
+
+    ctx.globalAlpha=0.5;
+    ctx.fillStyle = colors.LIGHT_BLUE;
+    ctx.fillRect(x_min + 200,y_min + 20,x_range-400,40);
+    ctx.globalAlpha=1.0;
+
+    ctx.textAlign = "center";
+
+    ctx.globalAlpha=1.0;
+    ctx.font="28px Ubuntu";
+    ctx.fillStyle = colors.WHITE;
+    ctx.fillText("Game Over", x_min + x_range/2.0, y_min + 50);
+
+    var end_team_stats = get_end_team_winners();
+    var team_names = [];
+    for ( var i = 0; i < end_team_stats.length; i++ ){
+        team_names.push( end_team_stats[i][0].team_name );
+    }
+    var team_winners_string = team_names.join();
+
+    ctx.globalAlpha=0.5;
+    ctx.fillStyle = colors.LIGHT_BLUE;
+    ctx.fillRect(x_min + 100,y_min + 70,x_range-200,40);
+    ctx.globalAlpha=1.0;
+
+
+    ctx.textAlign = "start";
+
+    if ( team_names.length > 1 ){
+        ctx.globalAlpha=0.5;
+        ctx.fillStyle = colors.LIGHT_BLUE;
+        ctx.fillRect(x_min + 125,y_min + 75,x_range-250,30);
+        ctx.globalAlpha=1.0;
+
+        ctx.globalAlpha=1.0;
+        ctx.font="20px Ubuntu";
+        ctx.fillStyle = colors.WHITE;
+        ctx.fillText("Tie Game: " + team_winners_string, x_min + 150, y_min + 100);
+    }
+    else {
+        ctx.globalAlpha=0.5;
+        ctx.fillStyle = end_team_stats[0][0].get_color();
+        ctx.fillRect(x_min + 125,y_min + 75,x_range-250,30);
+        ctx.globalAlpha=1.0;
+
+        ctx.globalAlpha=1.0;
+        ctx.font="20px Ubuntu";
+        ctx.fillStyle = colors.WHITE;
+        ctx.fillText("Winner: " + team_winners_string, x_min + 150, y_min + 100);
+    }
+
+    var end_stats = get_end_player_winners();
+    //var end_stats_names = ["Most Active: ", "Most Powerups: ", "Most Aggressive: ", "Most Traveled: ", "Most Coins: ", "Most Sprints: ", "Most Accurate: "];
+    var end_stats_names = ["Button Smasher", "Powerup Fanatic", "Lead Attacker", "Travel Connossier", "Coin Hearder", "Sprint Champion", "Precision Master"];
+
+
+    ctx.globalAlpha=0.5;
+    ctx.fillStyle = colors.LIGHT_BLUE;
+    ctx.fillRect(x_min + 100,y_min + 120,x_range-200,50+7*(end_stats.length)*load_count);
+    ctx.globalAlpha=1.0;
+
+    for ( var i = 0; i < end_stats.length; i++ ){
+        
+        if ( load_count < i ){
+            load_count += 0.05;
+            break;
+        }
+
+        var winner = end_stats[i][0];
+        var color = winner.get_color();
+
+        ctx.globalAlpha=0.3;
+        ctx.fillStyle = color;
+        ctx.fillRect(x_min + 125, y_min + 130 + 50*i,x_range/2.0-125,30);
+
+        ctx.globalAlpha=0.75;
+        ctx.font="16px Ubuntu";
+        ctx.fillStyle = colors.WHITE;
+        ctx.fillText(end_stats_names[i], x_min + 140, y_min + 150 + 50*i);
+        ctx.globalAlpha=1.0;
+    
+        ctx.textAlign = "end";
+
+        ctx.globalAlpha=0.45;
+        ctx.fillStyle = color;
+        ctx.fillRect(x_min + x_range/2.0, y_min + 130 + 50*i,x_range/2.0-125,30);
+
+        ctx.globalAlpha=0.75;
+        ctx.font="16px Ubuntu";
+        ctx.fillStyle = colors.WHITE;
+        ctx.fillText(winner.player_name, x_min + x_range - 140, y_min + 150 + 50*i);
+        ctx.globalAlpha=1.0;
+
+        ctx.textAlign = "start";
+    }
+/*
+    if ( game_start == false && 0 == 1 ){
+        ctx.globalAlpha=0.50;
+        ctx.fillStyle = colors.GOLD_YELLOW;
+        ctx.fillRect(650,250,150,50);
+        ctx.globalAlpha=1.0;
+        ctx.lineWidth=2;
+        ctx.beginPath(); 
+        ctx.strokeStyle=colors.WHITE;
+        ctx.rect(650,250,150,50); 
+        ctx.stroke();      
+        ctx.closePath(); 
+
+        ctx.globalAlpha=0.75;
+        ctx.font="24px Ubuntu";
+        ctx.fillStyle = colors.WHITE;
+        ctx.fillText("Start", 700, 285);
+    }
+*/
+}
 
 // --------------- DRAW BOARD ----------------- //
 function draw_board(){
@@ -77,6 +201,26 @@ function draw_coins(){
         ctx.globalAlpha = 1.0;
         
         coin.update();
+
+    }
+}
+
+// ------------- DRAW SKILL ORB --------------- //
+
+function draw_skill_coins(){
+    for ( var i in skill_orb ){
+        var skill_orb = skill_orb[i];
+        var position = skill_orb.get_position();
+
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.arc(position[0], position[1], coin.get_size()/2, 0, Math.PI*2); 
+        ctx.fillStyle = colors.LIGHT_BLUE_2;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = colors.LIGHT_BLUE_2;
+        ctx.stroke();
 
     }
 }
@@ -314,12 +458,12 @@ function draw_team_stats(){
 
         ctx.globalAlpha=0.50;
         ctx.fillStyle = colors.GOLD_YELLOW;
-        ctx.fillRect(685,65*team_count+115,total_coins*1,10);
+        ctx.fillRect(685,65*team_count+115,total_coins*0.25 ,10);
         ctx.globalAlpha=1.0;
 
         ctx.font="12px Ubuntu";
         ctx.fillStyle = colors.GOLD_YELLOW;
-        ctx.fillText(total_coins, 685+total_coins*1 + 5, 65*team_count+125);
+        ctx.fillText(total_coins, 685+total_coins*0.25 + 5, 65*team_count+125);
 
         team_count += 1;
     }
@@ -354,5 +498,4 @@ function draw_time_stats(){
         ctx.font="16px Ubuntu";
         ctx.fillStyle = colors.WHITE;
         ctx.fillText("Time: " + (time/fps).toFixed(0) + ' s', 650, 50);
-
 }

@@ -24,10 +24,10 @@ function Game_Presets(){
         }
 
         if (number == 1){
-            var player1 = {'name': 'jaragan', 'ai': false};
-            var player2 = {'name': 'sergei', 'ai': false};
-            var player3 = {'name': 'pratnag', 'ai': false};
-            var player4 = {'name': 'viber', 'ai': false};
+            var player1 = {'name': 'PopeyesChickenSucker', 'ai': false};
+            var player2 = {'name': 'pratnag', 'ai': false};
+            var player3 = {'name': 'a_jared', 'ai': false};
+            var player4 = {'name': 'n_mcripys', 'ai': false};
 
             var players1_list = [player1,player2];
             var players2_list = [player3,player4];
@@ -35,7 +35,7 @@ function Game_Presets(){
             var team1 = {'players': players1_list};
             var team2 = {'players': players2_list};
 
-            var teams = {'KP': team1, 'CV': team2};
+            var teams = {'Chewy Bars': team1, 'Black Panthers': team2};
 
             var game = {'teams': teams};
 
@@ -43,19 +43,23 @@ function Game_Presets(){
         }
 
         if (number == 2){
-            var player1 = {'name': 'sergei', 'ai': false};
-            var player2 = {'name': 'arch', 'ai': false};
-            var player3 = {'name': 'koko', 'ai': false};
+            var player1 = {'name': 'PopeyesChickenSucker', 'ai': false};
+            var player2 = {'name': 'BitchMagnet', 'ai': false};
+            var player3 = {'name': 'FuckBoy', 'ai': false};
+            var player4 = {'name': 'PizzaGreaseSucker', 'ai': false};
+            var player5 = {'name': 'CurryMunchingFaggler', 'ai': false};
 
             var players1_list = [player1];
             var players2_list = [player2];
             var players3_list = [player3];
+            var players4_list = [player4];
 
             var team1 = {'players': players1_list};
             var team2 = {'players': players2_list};
             var team3 = {'players': players3_list};
+            var team4 = {'players': players4_list};
 
-            var teams = {'Pratheek': team1, 'Corey': team2, 'Kaustav': team3};
+            var teams = {'PopeyesChickenSucker': team1, 'BitchMagnet': team2, 'FuckBoy': team3, 'PizzaGreaseSucker': team4, 'CurryMunchingFaggler': team5};
 
             var game = {'teams': teams};
 

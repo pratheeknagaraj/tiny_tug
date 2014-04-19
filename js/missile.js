@@ -5,8 +5,8 @@ function Missile(){
     this.angle = 0;
     this.lifetime = 150 + Math.floor(150*Math.random());
     this.life_count = 0;
-    this.hit_count = 3 + Math.floor(Math.random()*3);
-    this.size = 1.5*this.hit_count;
+    this.hit_count = 5 + Math.floor(Math.random()*5);
+    this.size = 1.1*this.hit_count;
     this.base_speed_multiplier = 1.0 - (this.hit_count-3)/8.0; 
     this.mass = 5;
     this.owner = undefined;

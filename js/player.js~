@@ -16,6 +16,7 @@ function Player(team,name,id,ai,game){
 
     this.double_tap_counter = 90;
     this.sprint_count = 0;
+    this.total_press_count = 0;
 
     this.base_tension_multiplier = 1.0;
     this.tension_multiplier = this.base_tension_multiplier;
@@ -118,11 +119,39 @@ function Player(team,name,id,ai,game){
         this.dx = (dvx + this.vx)*dt
         this.dy = (dvy + this.vy)*dt
 
-        this.distance_traveled += this.dx + this.dy;
+        this.distance_traveled += Math.abs(this.dx) + Math.abs(this.dy);
 
         this.check_boundaries();
 
         this.double_tap_counter += 1;
+    }
+
+    this.add_press_count = function(horiz,vert){
+        this.total_press_count += Math.abs(horiz) + Math.abs(vert);
+    }
+
+    this.get_total_press_count = function(){
+        return this.total_press_count;
+    }
+
+    this.get_distance_traveled = function(){
+        return this.distance_traveled;
+    }
+
+    this.get_coins_collected_count = function(){
+        return this.coins_collected;
+    }
+
+    this.get_powerups_collected_count = function(){
+        return this.powerups_collected;
+    }
+
+    this.get_aggressive_count = function(){
+        return this.aggressive_count;
+    }
+
+    this.get_sprint_count = function(){
+        return this.sprint_count;
     }
 
     this.set_team = function(team){
@@ -255,10 +284,8 @@ function Player(team,name,id,ai,game){
 
         //add_icon(this.x+this.size/2+5, this.y+this.size/2+5, "Attack_Red");
 
-
-
         ctx.globalAlpha=0.75;
-        ctx.font="10px Ubuntu";
+        ctx.font="12px Ubuntu";
         ctx.fillStyle = colors.GREY_1;
         ctx.fillText(this.get_powerups_abbreviations_string(), this.x+this.size/2+5, this.y+this.size/2+5);
             
@@ -311,7 +338,6 @@ function Player(team,name,id,ai,game){
         for ( var i in this.powerups ){
             powerup_abbreviations.push( this.powerups[i].get_abbreviation() );
         }
-        console.log(powerup_abbreviations);
         var powerup_abbreviations_string = powerup_abbreviations.join();
         return powerup_abbreviations_string;
     }
@@ -354,8 +380,10 @@ function Player(team,name,id,ai,game){
                 else if ( powerup.get_type() == "Steal" ){
                     if ( this.coins > 0 ){
                         this.subtract_coin();
+                        this.subtract_coin();
                         collision_player.add_coin();
-                        collision_player.add_aggressive_count( 1 );   
+                        collision_player.add_coin();
+                        collision_player.add_aggressive_count( 2 );   
                     }
                 }
             }
