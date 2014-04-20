@@ -21,7 +21,7 @@ function get_team_stats(){
         for ( var i in team['players'] ){
             var player = team['players'][i];
             team['coins'] += player.get_coins();
-            team['powerups'] += player.();
+            team['powerups'] += player.get_powerups_collected_count();
         }
     }
 }

@@ -49,11 +49,11 @@ function update_special_player_stats(){
         new_pair.push(player, team, press_count, powerups_count, aggressive_count, distance_traveled, coins_count, sprint_count, accuracy_value );
         pairs.push(new_pair);    
     }
-    console.log(pairs);
+
     for ( var i = 2; i < 9; i++ ){
         end_player_winners.push( find_max_pair(pairs,i) );
     }
-    console.log(end_player_winners);
+
 }
 
 function get_end_player_winners(){

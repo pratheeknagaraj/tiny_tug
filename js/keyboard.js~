@@ -1,13 +1,26 @@
-function remove_key_down(key){
+function remove_key_down(key,key_code){
     if (key in keys_pressed){
         delete keys_pressed[key];
+    }
+    if (key_code in key_code_pressed){
+        delete key_code_pressed[key_code];
     }
     key_up_times[key] = get_time();
 }
 
-function add_key_down(key){
+function is_key_down(key){
+    if (key in keys_pressed){
+        return true;
+    }
+    return false;
+}
+
+function add_key_down(key,key_code){
     if (key in keys_pressed == false){
         keys_pressed[key] = true;
+    }
+    if (key_code in key_code_pressed == false){
+        key_code_pressed[key_code] = true;
     }
     if ( key in double_tap == false && key in key_up_times && 
         get_time() - key_up_times[key] < double_tap_sensitivity && key in key_down_times && 
@@ -53,7 +66,7 @@ function get_default_move_mappings(count){
         return {'&': [0,-1], '%': [-1,0], '(': [0,1], '\'': [1,0]};
     }
 
-    if ( count == 3 ){
+    if ( count == 4 ){
         return {'I': [0,-1], 'J': [-1,0], 'K': [0,1], 'L': [1,0]};
     }
 }

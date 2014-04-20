@@ -5,12 +5,25 @@ function Missile(){
     this.angle = 0;
     this.lifetime = 150 + Math.floor(150*Math.random());
     this.life_count = 0;
-    this.hit_count = 5 + Math.floor(Math.random()*5);
-    this.size = 1.1*this.hit_count;
-    this.base_speed_multiplier = 1.0 - (this.hit_count-3)/8.0; 
     this.mass = 5;
     this.owner = undefined;
     this.has_hit = false;
+
+    this.hit_count = undefined;
+    this.size = undefined;
+    this.base_speed_multiplier = undefined; 
+    
+    this.default_setting = function(){
+        this.hit_count = 5 + Math.floor(Math.random()*5);
+        this.size = 1.1*this.hit_count;
+        this.base_speed_multiplier = 1.0 - (this.hit_count-3)/8.0; 
+    }
+
+    this.skill_setting = function(){
+        this.hit_count = 1;
+        this.size = 3*this.hit_count;
+        this.base_speed_multiplier = 1.0 - (this.hit_count-3)/8.0; 
+    }
 
     this.get_angle = function(){
         return this.angle;
@@ -145,12 +158,15 @@ function remove_dead_missiles(){
     dead_missiles = new_dead_missiles;
 }
 
-function add_missiles(count,player){
+function add_missiles(count,player,input_angle){
     var radius = player.get_size();
     var position = player.get_position();
     for ( var i = 0; i < count; i++ ){
         var new_missile = create_missile();
-        var angle = Math.random()*Math.PI*2;
+        var angle = Math.random()*Math.PI*2;        
+        if ( input_angle != undefined ){
+            var angle = input_angle;
+        }
         var x = Math.cos(angle) * ( radius + 10 ) + position[0];
         var y = Math.sin(angle) * ( radius + 10 ) + position[1];
         while ( check_if_valid_interior(x,y) == false ){
@@ -161,6 +177,12 @@ function add_missiles(count,player){
         new_missile.set_position(x,y);
         new_missile.set_angle(x,y);        
         new_missile.set_owner(player);
+        if ( input_angle == undefined ){
+            new_missile.default_setting();
+        }
+        else {
+            new_missile.skill_setting();
+        }
         
         missiles.push( new_missile );
     }

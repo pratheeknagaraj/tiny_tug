@@ -44,6 +44,37 @@ function Player(team,name,id,ai,game){
     this.powerups_collected = 0; 
     this.aggressive_count = 0;
 
+    this.skill_hit_count = 0;
+    this.skill_hit_threshold = 2;
+    this.skill_activated = false;
+    this.skill = undefined;
+    this.skill_type = undefined;
+
+    this.invisible = false;
+
+    this.is_nuclear = false;
+    this.nuclear_timer_max = 3*60;
+    this.nuclear_x = -1;
+    this.nuclear_y = -1;
+    this.nuclear_timer = 0;
+    this.nuclear_number = 0;
+
+    this.self_timer = 0;
+    this.last_orb_time = 0;
+
+    this.game_xmin = -1;
+    this.game_ymin = -1;
+    this.game_xrange = -1;
+    this.game_yrange = -1;
+
+    this.set_skill_type = function(skill_type){
+        this.skill_type = skill_type;
+    }
+
+    this.get_skill_type = function(){
+        return this.skill_type;
+    }
+
     this.get_position = function(){
         //return [this.x - this.size/2, this.y - this.size/2];
         return [this.x,this.y];
@@ -72,12 +103,21 @@ function Player(team,name,id,ai,game){
     this.set_random_start = function(xrange,yrange,xmin,ymin){ 
         this.x = xrange*Math.random() + xmin;
         this.y = yrange*Math.random() + ymin;
+
+        this.game_xmin = xmin;
+        this.game_ymin = ymin;
+        this.game_xrange = xrange;
+        this.game_yrange = yrange;
     }
 
     this.in_fire = function(prob){
         if ( Math.random() < prob ) {
             this.subtract_coin();
         }
+    }
+
+    this.set_invisible = function(setting){
+        this.invisible = setting;
     }
 
     this.calculate_move = function(tension,horiz,vert,double_tap_x,double_tap_y,friction,fatigue,others,dt){
@@ -91,6 +131,14 @@ function Player(team,name,id,ai,game){
             }
         }
 
+        if ( this.is_nuclear ){
+            var nuclear_horiz = horiz;
+            var nuclear_vert = vert;
+            this.nuclear_move(nuclear_horiz,nuclear_vert);
+            horiz = 0;
+            vert = 0;        
+        }
+
         var tx = tension[0]*this.tension_multiplier;
         var ty = tension[1]*this.tension_multiplier;
 
@@ -99,6 +147,12 @@ function Player(team,name,id,ai,game){
 
         var eff_fx = fx;
         var eff_fy = fy;
+
+        // Invisibility Bonus
+        if ( this.invisible ){
+            eff_fx *= 1.5;
+            eff_fy *= 1.5;
+        }
 
         if ( this.double_tap_counter > 90 && ( double_tap_x != 0 || double_tap_y != 0 )  ){
             eff_fx += double_tap_x*300;
@@ -124,6 +178,44 @@ function Player(team,name,id,ai,game){
         this.check_boundaries();
 
         this.double_tap_counter += 1;
+    }
+
+    this.nuclear_move = function(horiz,vert){
+        this.nuclear_x += horiz*5;
+        this.nuclear_y += vert*5;
+        this.nuclear_timer += 1;
+        this.nuclear_size = 50 + 100*(this.nuclear_timer*1.0/this.nuclear_timer_max);
+        this.nuclear_number = Math.ceil( (this.nuclear_timer_max - this.nuclear_timer)/(1.0*fps) );
+
+        if ( this.nuclear_x > this.game_xmin + this.game_xrange - this.nuclear_size/2.0 ){
+            this.nuclear_x = this.game_xmin + this.game_xrange - this.nuclear_size/2.0;
+        }
+
+        if ( this.nuclear_x < this.game_xmin + this.nuclear_size/2.0 ){
+            this.nuclear_x = this.game_xmin + this.nuclear_size/2.0;
+        }
+
+        if ( this.nuclear_y > this.game_ymin + this.game_yrange - this.nuclear_size/2.0 ){
+            this.nuclear_y = this.game_ymin + this.game_yrange - this.nuclear_size/2.0;
+        }
+
+        if ( this.nuclear_y < this.game_ymin + this.nuclear_size/2.0 ){
+            this.nuclear_y = this.game_ymin + this.nuclear_size/2.0;
+        }
+    }
+
+    this.nuclear_start = function(){
+        this.set_invisible(true);
+        this.is_nuclear = true;
+        this.nuclear_timer = 0;
+        this.nuclear_x = this.game_xmin + this.game_xrange/2.0;
+        this.nuclear_y = this.game_ymin + this.game_yrange/2.0;
+    }
+
+    this.nuclear_end = function(){
+        this.set_invisible(false);
+        this.is_nuclear = false;
+        this.nuclear_timer = 0;
     }
 
     this.add_press_count = function(horiz,vert){
@@ -160,8 +252,15 @@ function Player(team,name,id,ai,game){
 
     this.update = function(){
         this.use_abilities();
+        this.use_skills();
         this.make_move();
+        this.update_timer();
     }
+
+    this.update_timer = function(){
+        this.self_timer += 1;
+        this.skill_orb_timeout();
+    }   
 
     this.collision_update = function(){
         this.update_mass(); 
@@ -182,6 +281,12 @@ function Player(team,name,id,ai,game){
         this.coins_collected += 1;
         this.update_mass();
         this.update_size();
+    }
+
+    this.add_coins = function(count){
+        for ( var i = 0; i < count; i++ ){
+            this.add_coin();
+        }
     }
 
     this.subtract_coin = function(){
@@ -242,6 +347,7 @@ function Player(team,name,id,ai,game){
     }
     
     this.collision_velocity_update = function(momentum,angle){
+
         /*
         var total_momentum = Math.pow(Math.pow(momentum[0],2) + Math.pow(momentum[1],2),0.5);
         var eff_momentum = total_momentum/this.mass;
@@ -362,6 +468,47 @@ function Player(team,name,id,ai,game){
 
     this.add_aggressive_count = function(count){
         this.aggressive_count += count;
+    }
+
+    this.add_skill_orb_hit = function(){
+        this.skill_hit_count += 1;
+        if ( this.skill_hit_count >= this.skill_hit_threshold ){
+            this.activate_skill();
+            this.skill_hit_count = 0;
+            return false;
+        }
+        this.last_orb_time = this.self_timer;
+        return true;
+    }
+
+    this.skill_orb_timeout = function(){
+        if ( this.last_orb_time < this.self_timer - 60 && (this.self_timer - this.last_orb_time)%10 == 0 ){
+            this.skill_hit_count = Math.max(this.skill_hit_count - 1, 0);
+        } 
+    }
+   
+    this.get_skill_hit_percent = function(){
+        return this.skill_hit_count*1.0/this.skill_hit_threshold;
+    }
+
+    this.activate_skill = function(){
+        this.skill = activate_skill(this);
+        this.skill_activated = true;
+    }
+
+    this.use_skills = function(){
+        if ( this.skill_activated == true ){
+            this.skill.run_skill();
+        }
+        else {
+            return;
+        }
+        if ( this.skill.check_lifetime() == true ){
+            this.skill.end_skill();
+            this.skill_activated = false;
+            this.skill = undefined;
+        }
+
     }
 
     this.inflict_collision_powerups = function(inflicted,collision_player){

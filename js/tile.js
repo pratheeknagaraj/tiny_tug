@@ -200,10 +200,6 @@ function FireTile(x,y,size){
 
 // --------------- Create Tiles ------------- //
 
-var grid = [];
-var grid_types = [];
-var tile_size = 25;
-
 function set_tiles(){
     var boundaries = get_game_boundaries();
     var x_range = boundaries[2]-boundaries[0];

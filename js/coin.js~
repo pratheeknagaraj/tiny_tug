@@ -102,3 +102,21 @@ function remove_lost_coins(){
     }
     lost_coins = new_lost_coins;
 }
+
+function burst_coins(x,y,count,player){
+    var radius = player.get_size();
+    var position = player.get_position();
+    for ( var i = 0; i < count; i++ ){
+        var new_coin = create_coin();
+        var angle = Math.random()*Math.PI*2;
+        var x = Math.cos(angle) * ( radius + 10 ) + position[0];
+        var y = Math.sin(angle) * ( radius + 10 ) + position[1];
+        while ( check_if_valid_interior(x,y) == false ){
+            var angle = Math.random()*Math.PI*2;
+            var x = Math.cos(angle) * ( radius + 10 ) + position[0];
+            var y = Math.sin(angle) * ( radius + 10 ) + position[1];
+        }
+        new_coin.set_position(x,y);
+        coins.push( new_coin );
+    }
+}

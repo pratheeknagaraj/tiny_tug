@@ -24,10 +24,10 @@ function Game_Presets(){
         }
 
         if (number == 1){
-            var player1 = {'name': 'PopeyesChickenSucker', 'ai': false};
-            var player2 = {'name': 'pratnag', 'ai': false};
-            var player3 = {'name': 'a_jared', 'ai': false};
-            var player4 = {'name': 'n_mcripys', 'ai': false};
+            var player1 = {'name': 'Player1', 'ai': false};
+            var player2 = {'name': 'Player2', 'ai': false};
+            var player3 = {'name': 'Player3', 'ai': false};
+            var player4 = {'name': 'Player4', 'ai': false};
 
             var players1_list = [player1,player2];
             var players2_list = [player3,player4];
@@ -35,31 +35,33 @@ function Game_Presets(){
             var team1 = {'players': players1_list};
             var team2 = {'players': players2_list};
 
-            var teams = {'Chewy Bars': team1, 'Black Panthers': team2};
+            var teams = {'Team 1': team1, 'Team 2': team2};
 
             var game = {'teams': teams};
 
             return game;
         }
 
-        if (number == 2){
-            var player1 = {'name': 'PopeyesChickenSucker', 'ai': false};
-            var player2 = {'name': 'BitchMagnet', 'ai': false};
-            var player3 = {'name': 'FuckBoy', 'ai': false};
-            var player4 = {'name': 'PizzaGreaseSucker', 'ai': false};
-            var player5 = {'name': 'CurryMunchingFaggler', 'ai': false};
+        if (number == 2){var skills_list = ['lightning','plunder','nuclear','barrage','invisible'];
+            var player1 = {'name': 'Player1', 'ai': false, 'skill': 'lightning'};
+            var player2 = {'name': 'Player2', 'ai': false, 'skill': 'plunder'};
+            var player3 = {'name': 'Player3', 'ai': false, 'skill': 'nuclear'};
+            var player4 = {'name': 'Player4', 'ai': false, 'skill': 'barrage'};
+            var player5 = {'name': 'Player5', 'ai': false, 'skill': 'invisible'};
 
             var players1_list = [player1];
             var players2_list = [player2];
             var players3_list = [player3];
             var players4_list = [player4];
+            var players5_list = [player5];
 
             var team1 = {'players': players1_list};
             var team2 = {'players': players2_list};
             var team3 = {'players': players3_list};
             var team4 = {'players': players4_list};
+            var team5 = {'players': players5_list};
 
-            var teams = {'PopeyesChickenSucker': team1, 'BitchMagnet': team2, 'FuckBoy': team3, 'PizzaGreaseSucker': team4, 'CurryMunchingFaggler': team5};
+            var teams = {'Team1': team1, 'Team2': team2, 'Team3': team3, 'Team4': team4, 'Team5': team5};
 
             var game = {'teams': teams};
 

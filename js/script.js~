@@ -81,8 +81,10 @@ function create_players(teams_info){
             var player = team['players'][i];
             var player_name = player['name'];
             var player_ai = player['ai'];
+            var player_skill_type = player['skill'];
 
             var new_player = create_player(team_id,player_name,player_id,player_ai,this);
+            new_player.set_skill_type(player_skill_type);
             id_to_player[player_id] = new_player;
             new_player.set_random_start(x_range,y_range,x_min,y_min);
             players.push(new_player);
@@ -102,10 +104,13 @@ function create_players(teams_info){
 }
 
 function create_skill_orbs(){
-    if ( powerups.length < max_skill_orbs ){
+    if ( skill_orbs.length < max_skill_orbs ){
         if ( Math.random() > skill_orb_frequency ){
-            var new_skill_orb = create_powerup();
+            var new_skill_orb = create_skill_orb();
             new_skill_orb.set_random_position(x_range,y_range,x_min,y_min);
+            while ( get_collide_with_player(new_skill_orb) ){
+                new_skill_orb.set_random_position(x_range,y_range,x_min,y_min);
+            }
             skill_orbs.push( new_skill_orb );
         }
     }
@@ -127,6 +132,7 @@ function draw_sprites(){
     draw_coins();
     draw_missiles();
     draw_powerups();
+    draw_skill_orbs();
 }
 
 function update_game_status(){
@@ -142,7 +148,6 @@ function get_keyboard_moves(id){
     var key_map = move_mappings[id];
     var result = [0,0]
 
-    console.log(key_map)
     for ( var i in keys_pressed ){
         if ( i in key_map ){
             result[0] += key_map[i][0]
@@ -192,7 +197,7 @@ function main(){
     if ( has_ended == false ){
         game_time_update();
         create_coins();
-        create_skill_orb();
+        create_skill_orbs();
         remove_lost_coins();
         remove_dead_missiles();
         create_powerups();
@@ -200,6 +205,7 @@ function main(){
     }
     else {
         draw_end_screen();
+        replay_game();
     }
 
     clear_variables();
@@ -225,10 +231,53 @@ function check_end(){
         if ( (time*1000)/fps > end_time ) {
             has_ended = true;
             play_sfx('end_beep');
-            console.log("Total Time: " + end_time/1000 + "\n" + get_winner());
             run_game_over_stats();
         }
     }
+}
+
+function replay_game(){
+    if ( new_game_ready == true ){
+        if ( is_key_down(undefined,13) ){
+            console.log("NEW GAME REQUESTED");
+            new_game_ready = false;
+            start_new_game();
+        }
+    }
+}
+
+function clean_game_variables(){
+
+    players = [];
+    id_to_player = {};
+    teathers = {};
+
+    teams = [];
+    team_stats = {};
+
+    time = 0;
+    time_warning_count = 0;
+    has_ended = false;
+
+    keys_pressed = {};
+    key_code_pressed = {};
+    move_mappings = {};
+    mapped = 0;
+
+    grid = [];
+    grid_types = [];
+
+    load_count = 0;v
+
+    end_player_winners = [];
+    end_team_winners = [];
+}
+
+function start_new_game(){
+
+    clean_game_variables();
+
+    start();
 }
 
 function games(){
@@ -273,13 +322,13 @@ $(function(){
     $(document.body).keydown(function (evt) {
         var key_down = evt.keyCode;
         key = String.fromCharCode(evt.keyCode);
-        add_key_down(key);
+        add_key_down(key,evt.keyCode);
     });
 
     $(document.body).keyup(function (evt) {
         var key_down = evt.keyCode;
         key = String.fromCharCode(evt.keyCode);
-        remove_key_down(key);
+        remove_key_down(key,evt.keyCode);
     });
 
 

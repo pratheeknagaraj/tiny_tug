@@ -82,6 +82,11 @@ function get_distance(x1,x2,y1,y2){
     return Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 }
 
+function get_sprite_coord_distance(sprite,x2,y2){
+    var s_pos = sprite.get_position();
+    return get_distance( s_pos[0], x2, s_pos[1], y2 );
+}
+
 function get_sprite_distance(s1,s2){
     var s1_pos = s1.get_position();
     var s2_pos = s2.get_position();

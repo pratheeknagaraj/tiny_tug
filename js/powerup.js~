@@ -1,7 +1,3 @@
-var powerups_available = ['Attack','Steal','Magnet','CoinBurst','SpeedBoost','Elastic','Missile'];
-//var powerups_available = ['Magnet','Attack','CoinBurst'];
-
-var use_icons = true;
 // --------------- Powerups ------------- //
 
 function Powerup(){ 
@@ -161,7 +157,7 @@ function MissilePowerup(x,y,player){
     this.activate();
     this.count = 3;
 
-    add_missiles(this.count,player);
+    add_missiles(this.count,player,10);
 
     this.get_abbreviation = function(){
         return "Mi";

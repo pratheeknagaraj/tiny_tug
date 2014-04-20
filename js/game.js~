@@ -47,7 +47,7 @@ function update_players(){
         }
 
         player.calculate_move(tension,horiz,vert,double_taps[0],double_taps[1],friction,fatigue,others,delta_time);
-        player.add_press_count(
+        player.add_press_count(horiz,vert);
     }
 
     for ( var j in players ){
@@ -80,6 +80,11 @@ function get_game_boundaries(){
 
 function get_distance(x1,x2,y1,y2){
     return Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+}
+
+function get_sprite_coord_distance(sprite,x2,y2){
+    var s1_pos = s1.get_position();
+    return get_distance( s1_pos[0], x2, s1_pos[1], y2 );
 }
 
 function get_sprite_distance(s1,s2){

@@ -14,8 +14,8 @@ function Coin(){
     }
 
     this.set_random_position = function(xrange,yrange,xmin,ymin){ 
-        this.x = xrange*Math.random() + xmin;
-        this.y = yrange*Math.random() + ymin;
+        this.x = (xrange-this.size)*Math.random() + xmin + this.size/2.0;
+        this.y = (yrange-this.size)*Math.random() + ymin + this.size/2.0;
     }   
 
     this.set_position = function(x,y){ 

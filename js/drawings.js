@@ -98,7 +98,7 @@ function draw_end_screen(){
 
     ctx.globalAlpha=0.5;
     ctx.fillStyle = colors.LIGHT_BLUE;
-    ctx.fillRect(x_min + 100,y_min + 120,x_range-200,50+7*(end_stats.length)*load_count);
+    ctx.fillRect(x_min + 100,y_min + 120,x_range-200,70+7*(end_stats.length)*load_count);
     ctx.globalAlpha=1.0;
 
     for ( var i = 0; i < end_stats.length; i++ ){
@@ -113,28 +113,52 @@ function draw_end_screen(){
 
         ctx.globalAlpha=0.3;
         ctx.fillStyle = color;
-        ctx.fillRect(x_min + 125, y_min + 130 + 50*i,x_range/2.0-125,30);
+        ctx.fillRect(x_min + 125, y_min + 130 + 45*i,x_range/2.0-125,30);
 
         ctx.globalAlpha=0.75;
         ctx.font="16px Ubuntu";
         ctx.fillStyle = colors.WHITE;
-        ctx.fillText(end_stats_names[i], x_min + 140, y_min + 150 + 50*i);
+        ctx.fillText(end_stats_names[i], x_min + 140, y_min + 150 + 45*i);
         ctx.globalAlpha=1.0;
     
         ctx.textAlign = "end";
 
         ctx.globalAlpha=0.45;
         ctx.fillStyle = color;
-        ctx.fillRect(x_min + x_range/2.0, y_min + 130 + 50*i,x_range/2.0-125,30);
+        ctx.fillRect(x_min + x_range/2.0, y_min + 130 + 45*i,x_range/2.0-125,30);
 
         ctx.globalAlpha=0.75;
         ctx.font="16px Ubuntu";
         ctx.fillStyle = colors.WHITE;
-        ctx.fillText(winner.player_name, x_min + x_range - 140, y_min + 150 + 50*i);
+        ctx.fillText(winner.player_name, x_min + x_range - 140, y_min + 150 + 45*i);
         ctx.globalAlpha=1.0;
 
         ctx.textAlign = "start";
     }
+
+    if ( load_count > end_stats_names.length - 1 ){
+        ctx.globalAlpha=0.15;
+        ctx.fillStyle = colors.WHITE;
+        ctx.fillRect(x_min + 250,y_min + 440,100,30);
+
+        ctx.globalAlpha=0.75;
+        ctx.lineWidth=1.5;
+        ctx.beginPath(); 
+        ctx.strokeStyle=colors.WHITE;
+        ctx.rect(x_min + 250,y_min + 440,100,30);
+        ctx.closePath();  
+        ctx.stroke();    
+
+        ctx.globalAlpha=0.75;
+        ctx.font="16px Ubuntu";
+        ctx.fillStyle = colors.WHITE;
+        ctx.fillText("Replay?",x_min + 273, y_min + 460);
+        ctx.globalAlpha=1.0;
+
+        new_game_ready = true;
+
+    }
+
 /*
     if ( game_start == false && 0 == 1 ){
         ctx.globalAlpha=0.50;
@@ -205,22 +229,145 @@ function draw_coins(){
     }
 }
 
+// --------------- DRAW PLUNDERS ----------------- //
+
+function draw_plunders(owner,loser){
+
+    if ( loser == undefined ){
+        var owner_pos = owner.get_position();
+        var owner_size = owner.get_size();
+        var owner_color = owner.get_color();
+        var angle = 2*Math.PI * (get_time()%16 )/ 16;
+
+        ctx.beginPath();
+        ctx.moveTo(owner_pos[0],owner_pos[1]);
+        ctx.lineTo(owner_pos[0] + Math.cos(angle)*owner_size/2.0,owner_pos[1]+ Math.sin(angle)*owner_size/2.0);
+        ctx.closePath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = owner_color;
+        ctx.stroke();
+
+        ctx.globalAlpha = 1.0;
+    } 
+    else {
+        var owner_pos = owner.get_position();
+        var loser_pos = loser.get_position();
+
+        ctx.globalAlpha = 0.5;
+
+        var grad= ctx.createLinearGradient(owner_pos[0], owner_pos[1], loser_pos[0], loser_pos[1]);
+        grad.addColorStop(0.5, owner.get_color());
+        grad.addColorStop(1, loser.get_color());
+
+        ctx.strokeStyle = grad;
+
+        ctx.beginPath();
+        ctx.moveTo(owner_pos[0],owner_pos[1]);
+        ctx.lineTo(loser_pos[0],loser_pos[1]);
+        ctx.closePath();
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+// --------------- DRAW LIGHTNING ----------------- //
+
+function draw_lightning(players_hit,angle){
+    for ( var i in players_hit ){
+        var player = players_hit[i];
+        var player_pos = player.get_position();
+        var player_size = player.get_size();
+
+        //var angle = Math.random()*Math.PI*2;
+
+        ctx.globalAlpha = 0.5;
+        
+        ctx.beginPath();
+        ctx.moveTo(player_pos[0]+Math.cos(angle)*(player_size/2.0+5),       player_pos[1]+Math.sin(angle)*(player_size/2.0+5));
+        ctx.lineTo(player_pos[0]+Math.cos(angle+0.5)*(player_size/2.0+10),  player_pos[1]+Math.sin(angle+0.5)*(player_size/2.0+10));
+        ctx.lineTo(player_pos[0]+Math.cos(angle)*(player_size/2.0+9),       player_pos[1]+Math.sin(angle)*(player_size/2.0+9));
+        ctx.lineTo(player_pos[0]+Math.cos(angle+0.5)*(player_size/2.0+15),  player_pos[1]+Math.sin(angle+0.5)*(player_size/2.0+15));
+        ctx.closePath();
+
+        ctx.strokeStyle = colors.LIGHTNING;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(player_pos[0]-Math.cos(angle)*(player_size/2.0+5),       player_pos[1]-Math.sin(angle)*(player_size/2.0+5));
+        ctx.lineTo(player_pos[0]-Math.cos(angle+0.5)*(player_size/2.0+10),  player_pos[1]-Math.sin(angle+0.5)*(player_size/2.0+10));
+        ctx.lineTo(player_pos[0]-Math.cos(angle)*(player_size/2.0+9),       player_pos[1]-Math.sin(angle)*(player_size/2.0+9));
+        ctx.lineTo(player_pos[0]-Math.cos(angle+0.5)*(player_size/2.0+15), player_pos[1]-Math.sin(angle+0.5)*(player_size/2.0+15));      
+        ctx.closePath()
+
+        ctx.strokeStyle = colors.LIGHTNING;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 // ------------- DRAW SKILL ORB --------------- //
 
-function draw_skill_coins(){
-    for ( var i in skill_orb ){
-        var skill_orb = skill_orb[i];
+function draw_skill_orbs(){
+    for ( var i in skill_orbs ){
+        var skill_orb = skill_orbs[i];
         var position = skill_orb.get_position();
+        var size = skill_orb.get_size();
+        var self_timer = skill_orb.get_self_timer()/10;
 
         ctx.globalAlpha = 0.25;
         ctx.beginPath();
-        ctx.arc(position[0], position[1], coin.get_size()/2, 0, Math.PI*2); 
+        ctx.arc(position[0], position[1], skill_orb.get_size()/2, 0, Math.PI*2); 
         ctx.fillStyle = colors.LIGHT_BLUE_2;
         ctx.fill();
-        ctx.globalAlpha = 1.0;
         ctx.lineWidth = 1;
         ctx.strokeStyle = colors.LIGHT_BLUE_2;
         ctx.stroke();
+
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.moveTo(position[0]+skill_orb.get_size()*Math.cos(-1*self_timer)/2, position[1]+skill_orb.get_size()*Math.sin(-1*self_timer)/2);
+        ctx.lineTo(position[0]-skill_orb.get_size()*Math.sin(-1*self_timer)/2, position[1]+skill_orb.get_size()*Math.cos(-1*self_timer)/2);
+        ctx.lineTo(position[0]-skill_orb.get_size()*Math.cos(-1*self_timer)/2, position[1]-skill_orb.get_size()*Math.sin(-1*self_timer)/2);
+        ctx.lineTo(position[0]+skill_orb.get_size()*Math.sin(-1*self_timer)/2, position[1]-skill_orb.get_size()*Math.cos(-1*self_timer)/2);
+        ctx.lineTo(position[0]+skill_orb.get_size()*Math.cos(-1*self_timer)/2, position[1]+skill_orb.get_size()*Math.sin(-1*self_timer)/2);
+        ctx.closePath();
+
+        ctx.strokeStyle = colors.LIGHT_BLUE_2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.globalAlpha = 0.6;
+        ctx.lineWidth = 1.5;
+        ctx.arc(position[0], position[1], skill_orb.get_size()/2+Math.abs(3-self_timer%6)+2, self_timer, Math.PI/2+self_timer);
+        ctx.strokeStyle = colors.LIGHT_BLUE_2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.globalAlpha = 0.6;
+        ctx.arc(position[0], position[1], skill_orb.get_size()/2+Math.abs(3-self_timer%6)+2, self_timer+Math.PI, 3*Math.PI/2+self_timer);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = colors.LIGHT_BLUE_2;
+        ctx.stroke();
+
+        /*
+        for ( var i = 0; i < 10; i++ ){
+            console.log("HERE#"); 
+            ctx.globalAlpha = 0.5;
+            var angle = Math.random()*Math.PI*2;
+            ctx.beginPath();
+            ctx.moveTo(position[0]+size*Math.cos(angle),position[1]+size*Math.sin(angle));
+            ctx.lineTo(position[0]+(size+2)*Math.cos(angle),position[1]+(size+2)*Math.sin(angle));
+            ctx.closePath();
+            ctx.stroke();
+        }
+        */
+
+        ctx.globalAlpha = 1.0;
 
     }
 }
@@ -239,7 +386,7 @@ function draw_missiles(){
         var cen = position;
 
         ctx.beginPath();
-        ctx.moveTo(cen[0]+size*Math.cos(angle),position[1]+size*Math.sin(angle));
+        ctx.moveTo(cen[0]+size*Math.cos(angle),cen[1]+size*Math.sin(angle));
         ctx.lineTo(cen[0]+0.75*size*Math.cos(angle+Math.PI*2/3),cen[1]+0.75*size*Math.sin(angle+Math.PI*2/3));
         ctx.lineTo(cen[0]+0.75*size*Math.cos(angle+Math.PI*4/3),cen[1]+0.75*size*Math.sin(angle+Math.PI*4/3));
         ctx.closePath();
@@ -301,13 +448,67 @@ function draw_powerups(){
 function draw_players(){
     for ( var i in players ){
         player = players[i]
-        color = player.get_color(player.get_team());
+        var color = player.get_color(player.get_team());
+        var skill_hit_count = player.get_skill_hit_percent();
         
-        ctx.globalAlpha=0.3;
-
         var position = player.get_position();
         var size = player.get_size();
+            
 
+        if ( player.invisible == false ){
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.arc(position[0], position[1], size/2, 0, Math.PI*2); 
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+        else {
+            ctx.globalAlpha = 0.05;
+            ctx.beginPath();
+            ctx.arc(position[0], position[1], size/2, 0, Math.PI*2); 
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+            ctx.lineWidth = 0.5;
+            //ctx.arc(position[0], position[1], size/2, 0 + sector_angle*2*i, 0 + sector_angle*(2*i+1));                 
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+
+
+        if ( player.is_nuclear ){
+            var nuclear_x = player.nuclear_x;
+            var nuclear_y = player.nuclear_y;
+            var nuclear_size = player.nuclear_size;
+            var nuclear_number = player.nuclear_number;
+            var nuclear_timer = player.nuclear_timer*Math.PI*2/60;
+
+            ctx.globalAlpha = 0.1 + nuclear_size/2000.0;
+            ctx.beginPath();
+            ctx.arc(nuclear_x, nuclear_y, nuclear_size/2, 0, Math.PI*2); 
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(nuclear_x, nuclear_y);
+            ctx.lineTo(nuclear_x + Math.cos(nuclear_timer)*nuclear_size/2.0, nuclear_y + Math.sin(nuclear_timer)*nuclear_size/2.0);
+            ctx.closePath();
+
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+
+            ctx.globalAlpha=0.5;
+            ctx.font="24px Ubuntu";
+            ctx.fillStyle = color;
+            ctx.fillText(nuclear_number.toString(), nuclear_x-7, nuclear_y+5);
+        }
+
+        /*
         ctx.beginPath();
         ctx.arc(position[0], position[1], size/2, 0, Math.PI*2); 
         ctx.fillStyle = color;
@@ -315,6 +516,15 @@ function draw_players(){
         ctx.globalAlpha = 1.0;
         ctx.lineWidth = 2;
         ctx.strokeStyle = color;
+        ctx.stroke();
+        */
+
+        // Skill Orb Value
+        ctx.beginPath();
+        ctx.arc(position[0], position[1], size/2, 0, Math.PI*2*skill_hit_count); 
+        ctx.globalAlpha = 1.0;
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = colors.LIGHT_BLUE_2;
         ctx.stroke();
 
         ctx.globalAlpha=1.0;
