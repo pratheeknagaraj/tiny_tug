@@ -20,7 +20,7 @@ function Missile(){
     }
 
     this.skill_setting = function(){
-        this.hit_count = 1;
+        this.hit_count = 2 + Math.floor(Math.random()*2);
         this.size = 3*this.hit_count;
         this.base_speed_multiplier = 1.0 - (this.hit_count-3)/8.0; 
     }

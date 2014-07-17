@@ -32,7 +32,7 @@ function Game_Presets(){
             var players1_list = [player1,player2];
             var players2_list = [player3,player4];
 
-            var team1 = {'players': players1_list};
+            var team1 = {'players': players1_list}; 
             var team2 = {'players': players2_list};
 
             var teams = {'Team 1': team1, 'Team 2': team2};
@@ -43,11 +43,11 @@ function Game_Presets(){
         }
 
         if (number == 2){
-            var player1 = {'name': 'Player1', 'ai': false, 'skill': 'lightning'};
-            var player2 = {'name': 'Player2', 'ai': false, 'skill': 'plunder'};
-            var player3 = {'name': 'Player3', 'ai': false, 'skill': 'nuclear'};
-            var player4 = {'name': 'Player4', 'ai': false, 'skill': 'barrage'};
-            var player5 = {'name': 'Player5', 'ai': false, 'skill': 'invisible'};
+            var player1 = {'name': 'Koko', 'ai': false, 'skill': 'nuclear'};
+            var player2 = {'name': 'Jintastic', 'ai': false, 'skill': 'plunder'};
+            var player3 = {'name': 'Bultcocuk', 'ai': false, 'skill': 'plunder'};
+            var player4 = {'name': 'Jessica', 'ai': false, 'skill': 'plunder'};
+            var player5 = {'name': 'Pratnag', 'ai': false, 'skill': 'invisible'};
 
             var players1_list = [player1];
             var players2_list = [player2];
@@ -61,7 +61,7 @@ function Game_Presets(){
             var team4 = {'players': players4_list};
             var team5 = {'players': players5_list};
 
-            var teams = {'Team1': team1, 'Team2': team2, 'Team3': team3, 'Team4': team4, 'Team5': team5};
+            var teams = {'Kaustav': team1, 'Jin': team2, 'Deniz': team3, 'Jessica': team4, 'Pratheek': team5};
 
             var game = {'teams': teams};
 
@@ -69,8 +69,8 @@ function Game_Presets(){
         }
 
         if (number == 3){
-            var player1 = {'name': 'pratnag', 'ai': false};
-            var player2 = {'name': 'koko', 'ai': false};
+            var player1 = {'name': 'pratnag', 'ai': false, 'skill': 'invisible'};
+            var player2 = {'name': 'koko', 'ai': false, 'skill': 'nuclear'};
 
             var players1_list = [player1];
             var players2_list = [player2];

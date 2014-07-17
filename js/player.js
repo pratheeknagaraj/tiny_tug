@@ -120,6 +120,10 @@ function Player(team,name,id,ai,game){
         this.invisible = setting;
     }
 
+    this.set_metal = function(){
+        
+    }
+
     this.calculate_move = function(tension,horiz,vert,double_tap_x,double_tap_y,friction,fatigue,others,dt){
 
         if ( others.length > 0 ){
@@ -184,7 +188,7 @@ function Player(team,name,id,ai,game){
         this.nuclear_x += horiz*5;
         this.nuclear_y += vert*5;
         this.nuclear_timer += 1;
-        this.nuclear_size = 50 + 100*(this.nuclear_timer*1.0/this.nuclear_timer_max);
+        this.nuclear_size = 50 + 75*(this.nuclear_timer*1.0/this.nuclear_timer_max);
         this.nuclear_number = Math.ceil( (this.nuclear_timer_max - this.nuclear_timer)/(1.0*fps) );
 
         if ( this.nuclear_x > this.game_xmin + this.game_xrange - this.nuclear_size/2.0 ){

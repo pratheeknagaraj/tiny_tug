@@ -10,13 +10,13 @@ var powerups_available = ['Attack','Steal','Magnet','CoinBurst','SpeedBoost','Mi
 // var powerups_available = ['Magnet','Attack','CoinBurst'];
 //var powerups_available = ['Missile'];
 //var powerups_available = ['Elastic'];
-var powerups_available = ['Magnet'];
+//var powerups_available = ['Magnet'];
 
 var powerups = [];
 var max_powerups = 5;
 var powerup_frequency = 0.97;
 var max_skill_orbs = 1;
-var skill_orb_frequency = 0.90;
+var skill_orb_frequency = 0.98;
 
 // --------------- COIN VARIABLES ----------------- //
 
@@ -62,7 +62,7 @@ var team_stats = {};
 
 var time = 0;
 var delta_time = 1;
-var end_time = 1000;
+var end_time = 60000;
 var time_warning_count = 0;
 
 var fps = 60;

@@ -1,4 +1,4 @@
-var skills_list = ['lightning','plunder','nuclear','barrage','invisible'];
+var skills_list = ['lightning','plunder','nuclear','barrage','invisible','metal'];
 
 // ------------- Skill Objects -------------------- //
 function Skill(){ 
@@ -168,6 +168,29 @@ function PlunderSkill(player){
     }
 }
 
+// Metal Skill
+MetalSkill.prototype = new Powerup();
+MetalSkill.prototype.constructor=MetalSkill; 
+function MetalSkill(player){
+
+    this.start_time = get_time();
+    this.lifetime = 3*60;
+    this.collision_based = false;
+    this.type = "Metal";
+    this.set_owner(player);
+    this.activate();
+    this.owner.start_metal();
+
+    this.run_skill = function(){
+        invoke_metal(this.owner);
+    }
+
+    this.end_skill = function(){
+        this.owner.end_metal();
+        return;
+    }
+}
+
 // ----------------- Skill Functionality ------------- //
 function invoke_lightning(owner){
 
@@ -230,7 +253,7 @@ function invoke_nuclear(cen_x,cen_y,size,owner){
             // Nuclear HIT!
             var player_coins = player.get_coins();
             var hit_ratio = 1.0 - ( (distance - player.get_size()/2.0) / size );
-            var new_player_coins = Math.floor(player_coins * hit_ratio * 0.25);
+            var new_player_coins = Math.floor(player_coins * hit_ratio * 0.35);
             var aggressive_value = player_coins - new_player_coins;
 
             owner.add_aggressive_count( aggressive_value );
@@ -282,6 +305,10 @@ function invoke_plunder(owner){
         play_sfx('plunder_pop');
     }
     return selected_player;
+}
+
+function invoke_metal(owner){
+
 }
 
 // ------------------- Skill Helper ------------------ //
