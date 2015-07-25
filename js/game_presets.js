@@ -24,18 +24,18 @@ function Game_Presets(){
         }
 
         if (number == 1){
-            var player1 = {'name': 'Player1', 'ai': false};
-            var player2 = {'name': 'Player2', 'ai': false};
-            var player3 = {'name': 'Player3', 'ai': false};
-            var player4 = {'name': 'Player4', 'ai': false};
+            var player1 = {'name': 'viper', 'ai': false, 'skill': 'barrage'};
+            var player2 = {'name': 'pratnag', 'ai': false, 'skill': 'nuclear'};
+            //var player3 = {'name': 'pratnag1', 'ai': false, 'skill': 'invisible'};
+            //var player4 = {'name': 'pratnag2', 'ai': false, 'skill': 'lightning'};
 
-            var players1_list = [player1,player2];
-            var players2_list = [player3,player4];
+            var players1_list = [player1];//,player2];
+            var players2_list = [player2];//,player4];
 
             var team1 = {'players': players1_list}; 
             var team2 = {'players': players2_list};
 
-            var teams = {'Team 1': team1, 'Team 2': team2};
+            var teams = {'viper': team1, 'pratnag': team2};
 
             var game = {'teams': teams};
 

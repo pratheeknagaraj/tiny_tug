@@ -6,7 +6,7 @@ var use_icons = true;
 // --------------- POWERUP VARIABLES ----------------- //
 
 //var powerups_available = ['Attack','Steal','Magnet','CoinBurst','SpeedBoost','Elastic','Missile'];
-var powerups_available = ['Attack','Steal','Magnet','CoinBurst','SpeedBoost','Missile'];
+var powerups_available = ['Attack','Steal','Magnet','SpeedBoost','Missile'];
 // var powerups_available = ['Magnet','Attack','CoinBurst'];
 //var powerups_available = ['Missile'];
 //var powerups_available = ['Elastic'];
@@ -35,7 +35,7 @@ var game_start = false;
 var has_ended = false;
 var new_game_ready = false;
 
-var selected_game_preset = 2;
+var selected_game_preset = 1;
 
 // --------------- KEYBOARD CONTROL ----------------- //
 

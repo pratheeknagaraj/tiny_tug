@@ -14,15 +14,15 @@ function Missile(){
     this.base_speed_multiplier = undefined; 
     
     this.default_setting = function(){
-        this.hit_count = 5 + Math.floor(Math.random()*5);
+        this.hit_count = 7 + Math.floor(Math.random()*5);
         this.size = 1.1*this.hit_count;
-        this.base_speed_multiplier = 1.0 - (this.hit_count-3)/8.0; 
+        this.base_speed_multiplier = 2.0 - (this.hit_count-3)/8.0; 
     }
 
     this.skill_setting = function(){
-        this.hit_count = 2 + Math.floor(Math.random()*2);
+        this.hit_count = 1 + Math.floor(Math.random()*3);
         this.size = 3*this.hit_count;
-        this.base_speed_multiplier = 1.0 - (this.hit_count-3)/8.0; 
+        this.base_speed_multiplier = 1.0 - (this.hit_count-1)/4.0; 
     }
 
     this.get_angle = function(){

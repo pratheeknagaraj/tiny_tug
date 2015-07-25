@@ -1,0 +1,73 @@
+magnet_image = new Image();
+magnet_image.src = 'assets/icons/magnet.png';
+
+attack_image = new Image();
+attack_image.src = 'assets/icons/attack.png';
+
+attack_red_image = new Image();
+attack_red_image.src = 'assets/icons/attack_red.png';
+
+coin_burst_image = new Image();
+coin_burst_image.src = 'assets/icons/coin_burst.png';
+
+missile_image = new Image();
+missile_image.src = 'assets/icons/missile.png';
+
+elastic_image = new Image();
+elastic_image.src = 'assets/icons/elastic.png';
+
+speed_boost_image = new Image();
+speed_boost_image.src = 'assets/icons/speed_boost.png';
+
+speed_image = new Image();
+speed_boost_image.src = 'assets/icons/steal.png';
+
+function add_icon(x,y,type){
+    if (type == 'Magnet'){
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(magnet_image,x,y);
+        return;
+    }
+
+    if (type == 'Attack'){
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(attack_image,x,y);
+        return;
+    }
+
+    if (type == 'Attack_Red'){
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(attack_red_image,x,y);
+        return;
+    }
+
+    if (type == 'CoinBurst'){
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(coin_burst_image,x,y);
+        return;
+    }
+
+    if (type == 'Elastic'){
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(elastic_image,x,y);
+        return;
+    }
+
+    if (type == 'Steal'){
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(steal_image,x,y);
+        return;
+    }
+
+    if (type == 'SpeedBoost'){
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(speed_boost_image,x,y);
+        return;
+    }
+
+    if (type == 'Missile'){
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(missile_image,x,y);
+        return;
+    }
+}

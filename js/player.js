@@ -523,7 +523,7 @@ function Player(team,name,id,ai,game){
             if ( this.team != collision_player.get_team() ){
                 if ( powerup.get_type() == "Attack" ){
                     if ( this.coins > 0 ){
-                        var new_coin_count = Math.floor( this.coins/1.1 );
+                        var new_coin_count = Math.floor( this.coins/1.05 );
                         collision_player.add_aggressive_count( this.coins - new_coin_count );
                         this.subtract_coins( this.coins - new_coin_count );
                     }

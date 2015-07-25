@@ -1,6 +1,6 @@
 var tiles_available = ['Normal','Ice','Grass','Gel','Fire'];
 var tile_patches = {'Ice': [20], 'Grass': [30,10], 'Gel': [20], 'Fire': [10,20,30]}
-var tile_patches = {'Fire': [0], 'Grass': [0], 'Gel': [0], 'Ice': [10,20,30,20,30,20,30]}
+var tile_patches = {'Fire': [30,20,10], 'Grass': [20,10], 'Gel': [0], 'Ice': [10,20,30,20,30,20,30]}
 
 // --------------- Tiles ------------- //
 

@@ -1,0 +1,84 @@
+// Distribution
+function Distribution(){ 
+    this.range;
+    this.power;
+    this.dist;
+} 
+
+Distribution.prototype.getInfluence=function(){ 
+    var influence = {};
+    for (var key in this.dist){
+        influence[key] = this.power*this.dist[key];
+    }
+    return influence;
+} 
+
+// Uniform Distribution
+UniformDistribution.prototype = new Distribution();
+UniformDistribution.prototype.constructor=UniformDistribution; 
+function UniformDistribution(range, power){ 
+	this.range = range;
+    this.power = power;
+    this.dist = {};
+    this.dist[0] = 1.0;
+
+    for (var j = 0; j < range.length; j++ ){
+        var pos = range[j];         
+        if ( pos == 0 ){
+            continue;
+        }
+        this.dist[pos] = 1.0/(range.length-1);
+    }
+} 
+
+// Linear Distribution
+LinearDistribution.prototype = new Distribution();
+LinearDistribution.prototype.constructor=LinearDistribution; 
+function LinearDistribution(range, power){ 
+	this.range = range;
+    this.power = power;
+    this.dist = {};
+    this.dist[0] = 1.0;
+    
+    var sum = 0;
+    for (var i = 1; i < range.length; i++ ){
+        sum += i;
+    }
+    var div = 1.0/sum;
+    var count = 1;
+    for (var j = range.length-1; j > 0; j-- ){
+        var pos = range[j];         
+        if ( pos == 0 ){
+            continue;
+        }
+        this.dist[pos] = count*div;       
+        count += 1;
+    }
+} 
+
+// Quadratic Distribution
+QuadraticDistribution.prototype = new Distribution();
+QuadraticDistribution.prototype.constructor=QuadraticDistribution; 
+function QuadraticDistribution(range, power){ 
+	this.range = range;
+    this.power = power;
+    this.dist = {};
+    this.dist[0] = 1.0;
+
+    var sum = 0;
+    for (var i = 1; i < range.length; i++ ){
+        sum += i*i;
+    }
+    var div = 1.0/sum;
+    var count = 1;
+
+    for (var j = range.length-1; j > 0; j-- ){
+        var pos = range[j];         
+        if ( pos == 0 ){
+            continue;
+        }
+        this.dist[pos] = count*count*div;       
+        count += 1;
+    }
+} 
+

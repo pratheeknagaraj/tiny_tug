@@ -1,0 +1,32 @@
+SkillCoin.prototype.constructor=SkillCoin; 
+function SkillCoin(){
+    this.x = 0;
+    this.y = 0;
+    this.size = 5;
+    this.mass = 5;
+
+    this.get_position = function(){
+        return [this.x, this.y];
+    }
+
+    this.get_size = function(){
+        return this.size;
+    }
+
+    this.set_random_position = function(xrange,yrange,xmin,ymin){ 
+        this.x = xrange*Math.random() + xmin;
+        this.y = yrange*Math.random() + ymin;
+    }   
+
+    this.set_position = function(x,y){ 
+        this.x = x;
+        this.y = y;
+    } 
+
+    this.move = function(player,multiplier){
+        var force = 3 * multiplier * player.get_mass() * this.mass / Math.pow(get_sprite_distance(this,player),2.0);
+        var angle = get_sprite_angle(player,this);
+        this.x += force*Math.cos(angle);
+        this.y += force*Math.sin(angle);
+    }
+}

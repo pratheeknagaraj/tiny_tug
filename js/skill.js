@@ -71,7 +71,7 @@ BarrageSkill.prototype.constructor=BarrageSkill;
 function BarrageSkill(player){
 
     this.start_time = get_time();
-    this.lifetime = 120;
+    this.lifetime = 240;
     this.collision_based = false;
     this.type = "Barrage";
     this.set_owner(player);
@@ -79,9 +79,9 @@ function BarrageSkill(player){
     this.angle = 0;
 
     this.run_skill = function(){
-        if ( ( get_time() - this.lifetime )%2 == 0 ){
+        if ( ( get_time() - this.lifetime )%8 == 0 ){
             invoke_barrage(this.owner,this.angle);
-            this.angle += 6 * (2*Math.PI)/this.lifetime;
+            this.angle += 8 * (2*Math.PI)/this.lifetime;
             play_sfx('missile_blip');
         }
     }

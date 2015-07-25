@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" >
+    <head>
+        <meta charset="utf-8" />
+        <title>ASDF | The Game</title>
+
+        <link href="css/main.css" rel="stylesheet" type="text/css" />
+
+        <!--[if lt IE 9]>
+          <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+            <!-- Load socket.io client side contents. -->
+        <script src="/socket.io/socket.io.js"></script>
+
+            <!-- Game code -->
+
+            <!-- Load the common game code. -->
+        <script type="text/javascript" src="game.core.js"></script>
+            <!-- Finally, Load the game client code. -->
+        
+            <!-- Finally, Load the game client code. -->
+        <script type="text/javascript" src="client.js"></script>
+        
+        <script type="text/javascript" src="js/jquery-1.5.2.min.js"></script>
+        <script type="text/javascript" src="js/settings.js"></script>
+        <script type="text/javascript" src="js/game_presets.js"></script>
+        <script type="text/javascript" src="js/missile.js"></script>
+        <script type="text/javascript" src="js/tile.js"></script> 
+        <script type="text/javascript" src="js/skillorb.js"></script>
+        <script type="text/javascript" src="js/stats.js"></script>
+        <script type="text/javascript" src="js/keyboard.js"></script>
+        <script type="text/javascript" src="js/time.js"></script>
+        <script type="text/javascript" src="js/icons.js"></script>
+        <script type="text/javascript" src="js/sfx.js"></script>
+        <script type="text/javascript" src="js/drawings.js"></script>
+        <script type="text/javascript" src="js/collisions.js"></script>
+        <script type="text/javascript" src="js/teather.js"></script>
+        <script type="text/javascript" src="js/colors.js"></script>
+        <script type="text/javascript" src="js/powerup.js"></script>
+        <script type="text/javascript" src="js/team.js"></script>
+        <script type="text/javascript" src="js/skill.js"></script>
+        <script type="text/javascript" src="js/player.js"></script>
+        <script type="text/javascript" src="js/coin.js"></script>
+        <script type="text/javascript" src="js/game.js"></script>
+        <script type="text/javascript" src="js/script.js"></script>
+       
+    <style>
+        body
+        {
+                background-image:url('assets/backgrounds/background_5.jpg');
+        }
+        </style>
+    </head>
+    <body>
+
+        <div class="container">
+            <canvas id="scene" width="800" height="600"></canvas>
+        </div>
+
+        <!--<footer>
+            <h2>ASDF- Development</h2>
+        </footer>-->
+    </body>
+</html>
+
